@@ -130,6 +130,15 @@
             android:layout_alignParentBottom="true"
             android:text="Start reading your mind"
             android:onClick="mindwaveStartListener"/>
+
+        <Button
+            android:id="@+id/btnMove"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:layout_toEndOf="@+id/btnStart"
+            android:text="move"
+            />
     </RelativeLayout>
 
 </android.support.constraint.ConstraintLayout>

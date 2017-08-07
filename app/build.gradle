@@ -12,7 +12,10 @@ android {
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         ndk {
             abiFilters "armeabi", "armeabi-v7a", "x86", "mips"
-        }
+        }/*
+        jackOptions {
+            enabled true
+        }*/
     }
     buildTypes {
         release {
@@ -20,6 +23,12 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
+/*
+    compileOptions {
+        targetCompatibility 1.8
+        sourceCompatibility 1.8
+    }
+*/
 }
 
 dependencies {

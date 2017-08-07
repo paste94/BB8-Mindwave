@@ -303,13 +303,14 @@ public class MindwaveConnect{
                 //TODO add here code to show
 
                 if(value<30){
-                    mainActivity.ledColorBlue(null);
+                    //mainActivity.ledColorBlue(null);
                 }
                 else if(value>=30 && value<80){
-                    mainActivity.ledColorGreen(null);
+                    //mainActivity.ledColorGreen(null);
                 }
                 else if(value >=80){
-                    mainActivity.ledColorRed(null);
+                    //mainActivity.ledColorRed(null);
+
                 }
 
                 /*
@@ -432,7 +433,6 @@ public class MindwaveConnect{
 
         if (bInited) {
             nskAlgoSdk.NskAlgoUninit();
-            System.out.println("Algo settati!");
             bInited = false;
         }
         int ret = nskAlgoSdk.NskAlgoInit(algoTypes, mainActivity.getFilesDir().getAbsolutePath());
@@ -442,14 +442,11 @@ public class MindwaveConnect{
     }
 
     public void mindwaveStart(){
-        //setAlgos();
         if (bRunning == false) {
             nskAlgoSdk.NskAlgoStart(false);
-            System.out.println("Start!!!");
         } else {
             nskAlgoSdk.NskAlgoPause();
         }
-        System.out.println("MindWave: Algo started!");
     }
 
     /*
