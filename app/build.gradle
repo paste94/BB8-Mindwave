@@ -12,10 +12,7 @@ android {
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         ndk {
             abiFilters "armeabi", "armeabi-v7a", "x86", "mips"
-        }/*
-        jackOptions {
-            enabled true
-        }*/
+        }
     }
     buildTypes {
         release {
@@ -23,12 +20,6 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
-/*
-    compileOptions {
-        targetCompatibility 1.8
-        sourceCompatibility 1.8
-    }
-*/
 }
 
 dependencies {
@@ -44,4 +35,5 @@ dependencies {
     compile files('libs/libStreamSDK.jar')
     compile 'com.google.android.gms:play-services:11.0.2'
     compile files('libs/RobotLibrary.jar')
+    compile project(path: ':CalibrationLibrary')
 }

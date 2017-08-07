@@ -23,6 +23,7 @@ import java.util.List;
  */
 
 public class BB8Connect implements RobotChangedStateListener {
+    MainActivity mainActivity;
     //Orbotix classes
     private DiscoveryAgentLE _discoveryAgent;
     private static ConvenienceRobot robot;
@@ -114,8 +115,6 @@ public class BB8Connect implements RobotChangedStateListener {
         }
     };
 
-    MainActivity mainActivity;
-
     public BB8Connect(MainActivity ma){
         this.mainActivity = ma;
         DiscoveryAgentLE.getInstance().addRobotStateListener(this);
@@ -176,6 +175,10 @@ public class BB8Connect implements RobotChangedStateListener {
 
     public void stopRobot(){
         this.robot.stop();
+    }
+
+    public static ConvenienceRobot getRobot(){
+        return robot;
     }
 
     @Override

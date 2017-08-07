@@ -8,6 +8,8 @@
         <option name="modules">
           <set>
             <option value="$PROJECT_DIR$" />
+            <option value="$PROJECT_DIR$/CalibrationLibrary" />
+            <option value="$PROJECT_DIR$/JoystickLibrary" />
             <option value="$PROJECT_DIR$/app" />
           </set>
         </option>

@@ -13,6 +13,9 @@ import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
+import com.orbotix.calibration.api.CalibrationEventListener;
+import com.orbotix.calibration.api.CalibrationImageButtonView;
+import com.orbotix.calibration.api.CalibrationView;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -28,6 +31,8 @@ public class MainActivity extends AppCompatActivity {
     private MindwaveConnect mindwaveConnect;
     private BB8Connect bb8Connect;
     private BluetoothAdapter mBluetoothAdapter;
+    private CalibrationView calibrationView;
+    private CalibrationImageButtonView calibrationButtonView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -60,6 +65,8 @@ public class MainActivity extends AppCompatActivity {
 
         bb8Connect.startDiscovery();
 
+        setupCalibration();
+
         //mindwaveConnect.setAlgos();
         //mindwaveConnect.mindwaveStart();
     }
@@ -80,6 +87,62 @@ public class MainActivity extends AppCompatActivity {
                 return false;
             }
         });
+    }
+    /**
+     * Sets up the calibration gesture and button
+     */
+    private void setupCalibration() {
+        // Get the view from the xml file
+        calibrationView = (CalibrationView)findViewById(R.id.calibrationView);
+        // Set the glow. You might want to not turn this on if you're using any intense graphical elements.
+        calibrationView.setShowGlow(true);
+        // Register anonymously for the calibration life here. You could also have this class implement the interface
+        // manually if you plan to do more with the callbacks.
+        calibrationView.setCalibrationEventListener(new CalibrationEventListener() {
+            /**
+             * Invoked when the user begins the calibration process.
+             */
+            @Override
+            public void onCalibrationBegan() {
+                // The easy way to set up the robot for calibration is to use ConvenienceRobot#calibrating(true)
+                if(BB8Connect.getRobot() != null){
+                    BB8Connect.getRobot().calibrating(true);
+                }
+            }
+
+            /**
+             * Invoked when the user moves the calibration ring
+             * @param angle The angle that the robot has rotated to.
+             */
+            @Override
+            public void onCalibrationChanged(float angle) {
+                // The usual thing to do when calibration happens is to send a roll command with this new angle, a speed of 0
+                // and the calibrate flag set.
+                if(BB8Connect.getRobot() != null)
+                    BB8Connect.getRobot().rotate(angle);
+            }
+
+            /**
+             * Invoked when the user stops the calibration process
+             */
+            @Override
+            public void onCalibrationEnded() {
+                // This is where the calibration process is "committed". Here you want to tell the robot to stop as well as
+                // stop the calibration process.
+                if(BB8Connect.getRobot() != null) {
+                    BB8Connect.getRobot().stop();
+                    BB8Connect.getRobot().calibrating(false);
+                }
+            }
+        });
+        // Like the joystick, turn this off until a robot connects.
+        calibrationView.setEnabled(false);
+
+        // To set up the button, you need a calibration view. You get the button view, and then set it to the
+        // calibration view that we just configured.
+        calibrationButtonView = (CalibrationImageButtonView) findViewById(R.id.calibrateButton);
+        calibrationButtonView.setCalibrationView(calibrationView);
+        calibrationButtonView.setEnabled(false);
     }
 
     public void reactivateBluetoothOrLocation(){
@@ -125,12 +188,6 @@ public class MainActivity extends AppCompatActivity {
         bb8Connect.setRobotLed(0, 0, 1);
     }
     public void mindwaveStartListener(View v){ mindwaveConnect.mindwaveStart();}
-    public void moveRobot(View v){
-        bb8Connect.moveForward(0, (float) 0.1);
-    }
-    public void stopRobot(View v){
-        bb8Connect.stopRobot();
-    }
 
     public String getDaStatus(){
         return (String) this.daStatus.getText();
@@ -150,4 +207,5 @@ public class MainActivity extends AppCompatActivity {
         btnGreen.setEnabled(b);
         btnBlue.setEnabled(b);
     }
+    
 }
