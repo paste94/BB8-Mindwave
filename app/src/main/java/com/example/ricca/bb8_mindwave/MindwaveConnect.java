@@ -18,11 +18,8 @@ import com.neurosky.connection.DataType.MindDataType;
 import com.neurosky.connection.TgStreamHandler;
 import com.neurosky.connection.TgStreamReader;
 
-/**
- * Created by ricca on 02/08/17.
- */
 
-public class MindwaveConnect {
+public class MindwaveConnect{
     final String TAG = "MainActivityTag";
 
     private NskAlgoSdk nskAlgoSdk;
@@ -40,12 +37,14 @@ public class MindwaveConnect {
             switch (connectionStates) {
                 case ConnectionStates.STATE_CONNECTING:
                     showToast("MindWave is connecting... ", Toast.LENGTH_LONG);
+                    System.out.println("MindWave: Connecting... ");
                     // Do something when connecting
                     break;
                 case ConnectionStates.STATE_CONNECTED:
                     // Do something when connected
                     tgStreamReader.start();
                     showToast("Connected", Toast.LENGTH_SHORT);
+                    System.out.println("MindWave: Connected!");
                     break;
                 // TODO: Attivare automaticamente quello che fa il bottone SetAlgos!!!
                 case ConnectionStates.STATE_WORKING:
@@ -57,12 +56,7 @@ public class MindwaveConnect {
                     //tgStreamReader.startRecordRawData();
 
                     setAlgos();
-
-                    if (bRunning == false) {
-                        nskAlgoSdk.NskAlgoStart(false);
-                    } else {
-                        nskAlgoSdk.NskAlgoPause();
-                    }
+                    System.out.println("MindWave: Algos setted");
 
                     break;
                 case ConnectionStates.STATE_GET_DATA_TIME_OUT:
@@ -147,6 +141,7 @@ public class MindwaveConnect {
     };
     private NskAlgoType currentSelectedAlgo;
     private boolean bInited = false;
+    int algoTypes = 0;// = NskAlgoType.NSK_ALGO_TYPE_CR.value;
 
 
     public MindwaveConnect(MainActivity mainActivity){
@@ -306,6 +301,17 @@ public class MindwaveConnect {
                 final String finalAttStr = attStr;
                 final int finalValueAtt = value;
                 //TODO add here code to show
+
+                if(value<30){
+                    mainActivity.ledColorBlue(null);
+                }
+                else if(value>=30 && value<80){
+                    mainActivity.ledColorGreen(null);
+                }
+                else if(value >=80){
+                    mainActivity.ledColorRed(null);
+                }
+
                 /*
                 VolleyClient.volleyRequest("http://192.168.4.1/attenzione?value="+value, getApplicationContext());
 
@@ -392,7 +398,6 @@ public class MindwaveConnect {
 
     public void setAlgos() {
         // check selected algos
-        int algoTypes = 0;// = NskAlgoType.NSK_ALGO_TYPE_CR.value;
 
         //startButton.setEnabled(false);
 
@@ -425,17 +430,28 @@ public class MindwaveConnect {
         //bp_betaSeries = createSeries("Beta");
         //bp_gammaSeries = createSeries("Gamma");
 
-
         if (bInited) {
             nskAlgoSdk.NskAlgoUninit();
+            System.out.println("Algo settati!");
             bInited = false;
         }
         int ret = nskAlgoSdk.NskAlgoInit(algoTypes, mainActivity.getFilesDir().getAbsolutePath());
         if (ret == 0) {
             bInited = true;
         }
-
     }
+
+    public void mindwaveStart(){
+        //setAlgos();
+        if (bRunning == false) {
+            nskAlgoSdk.NskAlgoStart(false);
+            System.out.println("Start!!!");
+        } else {
+            nskAlgoSdk.NskAlgoPause();
+        }
+        System.out.println("MindWave: Algo started!");
+    }
+
     /*
         private void clearAllSeries () {
             if (bp_deltaSeries != null) {

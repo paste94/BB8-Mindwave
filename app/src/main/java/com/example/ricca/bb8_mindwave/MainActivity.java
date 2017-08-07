@@ -37,6 +37,7 @@ public class MainActivity extends AppCompatActivity implements RobotChangedState
     private Button btnGreen;
     private Button btnBlue;
     private ProgressBar attentionProgressBar;
+    MindwaveConnect mindwaveConnect;
 
     //Orbotix classes
     private DiscoveryAgentLE _discoveryAgent;
@@ -154,12 +155,16 @@ public class MainActivity extends AppCompatActivity implements RobotChangedState
         // Check if bluetooth or location are still enabled
         this.reactivateBluetoothOrLocation();
 
-        MindwaveConnect mindwaveConnect = new MindwaveConnect(this);
+        mindwaveConnect = new MindwaveConnect(this);
+
         mindwaveConnect.connect();
 
         DiscoveryAgentLE.getInstance().addRobotStateListener(this);
 
         startDiscovery();
+
+        //mindwaveConnect.setAlgos();
+        //mindwaveConnect.mindwaveStart();
     }
 
     private void reactivateBluetoothOrLocation(){
@@ -264,4 +269,6 @@ public class MainActivity extends AppCompatActivity implements RobotChangedState
     public void ledColorBlue(View v){
         _robot.setLed(0, 0, 1);
     }
+
+    public void mindwaveStartListener(View v){ mindwaveConnect.mindwaveStart();}
 }

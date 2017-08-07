@@ -122,6 +122,14 @@
             android:layout_below="@+id/btnGreen"
             android:onClick="ledColorBlue"
             android:text="Button" />
+
+        <Button
+            android:id="@+id/btnStart"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:text="Start reading your mind"
+            android:onClick="mindwaveStartListener"/>
     </RelativeLayout>
 
 </android.support.constraint.ConstraintLayout>
