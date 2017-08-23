@@ -24,11 +24,8 @@ public class MainActivity extends AppCompatActivity {
 
     private Button btnStartMovingRobot;
     private Button btnEmergencyBrake;
-    private ImageView imgMindwave;
-    private ImageView imgBB8;
     private MindwaveConnect mindwaveConnect;
     private BB8Connect bb8Connect;
-    private BluetoothAdapter mBluetoothAdapter;
     private CalibrationView calibrationView;
     private boolean isMindwaveConnected;
     private boolean isBB8Connected;
@@ -61,9 +58,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        this.imgBB8 = (ImageView) findViewById(R.id.imgBB8);
-        this.imgMindwave = (ImageView) findViewById(R.id.imgMindwave);
-        this.mindwaveConnect = new MindwaveConnect(this, 70);
+        this.mindwaveConnect = new MindwaveConnect(this);
         this.bb8Connect = new BB8Connect(this);
         this.btnStartMovingRobot = (Button)findViewById(R.id.btnStartMovingRobot);
         this.btnEmergencyBrake = (Button)findViewById(R.id.btnEmergencyBrake);
@@ -167,7 +162,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         // Check if bluetooth is still enabled
-        mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+        BluetoothAdapter mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         if (!mBluetoothAdapter.isEnabled()){
             startActivity(new Intent(MainActivity.this, BluetoothConnectionActivity.class));
         }
@@ -294,12 +289,17 @@ public class MainActivity extends AppCompatActivity {
         });
     }
     public void btnEmergencyBrakeListener(View v){
-        ((ProgressBar)findViewById(R.id.attentionProgressBar)).setProgress(0);
         this.mindwaveConnect.mindwavePause();
         this.bb8Connect.stopRobot();
         this.bb8Connect.setRobotLedBlue();
-        this.btnStartMovingRobot.setEnabled(true);
         this.setTxtAttention("--");
+        this.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                ((ProgressBar)findViewById(R.id.attentionProgressBar)).setProgress(0);
+                findViewById(R.id.btnStartMovingRobot).setEnabled(true);
+            }
+        });
     }
 
     //Azioni da eseguire quando il Mindwave registra un determinato valore

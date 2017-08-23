@@ -14,12 +14,8 @@ import com.orbotix.le.RobotRadioDescriptor;
 
 import java.util.List;
 
-/**
- * Created by ricca on 07/08/17.
- */
-
-public class BB8Connect implements RobotChangedStateListener {
-    MainActivity mainActivity;
+class BB8Connect implements RobotChangedStateListener {
+    private MainActivity mainActivity;
     //Orbotix classes
     private DiscoveryAgentLE _discoveryAgent;
     private static ConvenienceRobot robot;
@@ -73,7 +69,7 @@ public class BB8Connect implements RobotChangedStateListener {
         }
     };
 
-    public BB8Connect(MainActivity ma){
+    BB8Connect(MainActivity ma){
         this.mainActivity = ma;
         DiscoveryAgentLE.getInstance().addRobotStateListener(this);
     }
@@ -91,7 +87,7 @@ public class BB8Connect implements RobotChangedStateListener {
         _discoveryAgent = null;
     }
 
-    public void startDiscovery() {
+    void startDiscovery() {
         try {
             mainActivity.showToast("Inizio ricerca robot", Toast.LENGTH_LONG);
             _discoveryAgent = DiscoveryAgentLE.getInstance();
@@ -119,31 +115,27 @@ public class BB8Connect implements RobotChangedStateListener {
         }
     }
 
-    public void setRobotLed(int r, int g, int b){
-        this.robot.setLed(r, g, b);
-    }
-
-    public void setRobotLedRed(){
+    void setRobotLedRed(){
         robot.setLed(1,0,0);
     }
 
-    public void setRobotLedGreen(){
+    void setRobotLedGreen(){
         robot.setLed(0,1,0);
     }
 
-    public void setRobotLedBlue(){
+    void setRobotLedBlue(){
         robot.setLed(0,0,1);
     }
 
-    public void moveForward(double velocity ){
-        this.robot.drive(0, (float) velocity);
+    void moveForward(double velocity ){
+        robot.drive(0, (float) velocity);
     }
 
-    public void stopRobot(){
-        this.robot.stop();
+    void stopRobot(){
+        robot.stop();
     }
 
-    public static ConvenienceRobot getRobot(){
+    static ConvenienceRobot getRobot(){
         return robot;
     }
 

@@ -1,9 +1,5 @@
 package com.example.ricca.bb8_mindwave;
 
-/**
- * Created by ricca on 03/08/17.
- */
-
 import android.bluetooth.BluetoothAdapter;
 import android.util.Log;
 import android.widget.Toast;
@@ -18,22 +14,17 @@ import com.neurosky.connection.TgStreamHandler;
 import com.neurosky.connection.TgStreamReader;
 
 
-public class MindwaveConnect{
-    final String TAG = "MainActivityTag";
+class MindwaveConnect{
+    private final String TAG = "MainActivityTag";
 
-    public int algoTypes = 0;// = NskAlgoType.NSK_ALGO_TYPE_CR.value;
-    private NskAlgoSdk nskAlgoSdk;
+    private int algoTypes = 0;// = NskAlgoType.NSK_ALGO_TYPE_CR.value;
+    private NskAlgoSdk nskAlgoSdk = new NskAlgoSdk();
     private TgStreamReader tgStreamReader;
-    private BluetoothAdapter mBluetoothAdapter;
     private MainActivity mainActivity;
-    private boolean bRunning = false;
-    private NskAlgoType currentSelectedAlgo;
     private boolean bInited = false;
-    private int limit;
     private TgStreamHandler callback = new TgStreamHandler() {
         @Override
         public void onStatesChanged(int connectionStates) {
-            // TODO Auto-generated method stub
             Log.d(TAG, "connectionStates change to: " + connectionStates);
             switch (connectionStates) {
                 case ConnectionStates.STATE_CONNECTING:
@@ -49,7 +40,6 @@ public class MindwaveConnect{
                     System.out.println("MindWave: Connected!");
                     mainActivity.mindwaveConnected(true);
                     break;
-                // TODO: Attivare automaticamente quello che fa il bottone SetAlgos!!!
                 case ConnectionStates.STATE_WORKING:
                     mainActivity.showToast("WORKING", Toast.LENGTH_SHORT);
                     // Do something when working
@@ -89,7 +79,7 @@ public class MindwaveConnect{
                     mainActivity.btnEmergencyBrakeListener(null);
                     //nskAlgoSdk.NskAlgoStop();
                     //nskAlgoSdk.NskAlgoStop();
-                    nskAlgoSdk.NskAlgoUninit();
+                    NskAlgoSdk.NskAlgoUninit();
                     connect();
 
                     break;
@@ -130,7 +120,7 @@ public class MindwaveConnect{
             switch (datatype) {
                 case MindDataType.CODE_ATTENTION:
                     short attValue[] = {(short)data};
-                    nskAlgoSdk.NskAlgoDataStream(NskAlgoDataType.NSK_ALGO_DATA_TYPE_ATT.value, attValue, 1);
+                    NskAlgoSdk.NskAlgoDataStream(NskAlgoDataType.NSK_ALGO_DATA_TYPE_ATT.value, attValue, 1);
                     break;
                 case MindDataType.CODE_MEDITATION:
                     /*
@@ -140,7 +130,8 @@ public class MindwaveConnect{
                     break;
                 case MindDataType.CODE_POOR_SIGNAL:
                     short pqValue[] = {(short)data};
-                    nskAlgoSdk.NskAlgoDataStream(NskAlgoDataType.NSK_ALGO_DATA_TYPE_PQ.value, pqValue, 1);
+                    NskAlgoSdk.NskAlgoDataStream(NskAlgoDataType.NSK_ALGO_DATA_TYPE_PQ.value, pqValue, 1);
+                    //mainActivity.btnEmergencyBrakeListener(null);
                     break;
                 case MindDataType.CODE_RAW:
                     /*
@@ -157,20 +148,19 @@ public class MindwaveConnect{
         }
     };
 
-    public MindwaveConnect(MainActivity mainActivity, int limit){
+    MindwaveConnect(MainActivity mainActivity){
         this.mainActivity = mainActivity;
-        this.limit = limit;
     }
 
-    public void connect(){
-        nskAlgoSdk = new NskAlgoSdk();
-        mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+    void connect(){
+
+        BluetoothAdapter mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
 
         // Example of constructor public TgStreamReader(BluetoothAdapter ba, TgStreamHandler tgStreamHandler)
         tgStreamReader = new TgStreamReader(mBluetoothAdapter,callback);
 
-        //TODO: Continua a provare a connetterti finchè puoi. Se il while blocca, crea thread separato.
-        if(tgStreamReader != null && tgStreamReader.isBTConnected()) {
+        //Prima c'era anche il controllo: tgStreamReader != null &&
+        if(tgStreamReader.isBTConnected()) {
 
             // Prepare for connecting
             tgStreamReader.stop();
@@ -188,48 +178,11 @@ public class MindwaveConnect{
                 mainActivity.setTxtSignalQuality(NskAlgoSignalQuality.values()[level].toString());
             }
         });
-/*
-        nskAlgoSdk.setOnStateChangeListener(new NskAlgoSdk.OnStateChangeListener() {
-            @Override
-            public void onStateChange(int state, int reason) {
-                String stateStr = "";
-                String reasonStr = "";
-                for (NskAlgoState s : NskAlgoState.values()) {
-                    if (s.value == state) {
-                        stateStr = s.toString();
-                    }
-                }
-                for (NskAlgoState r : NskAlgoState.values()) {
-                    if (r.value == reason) {
-                        reasonStr = r.toString();
-                    }
-                }
-                Log.d(TAG, "NskAlgoSdkStateChangeListener: state: " + stateStr + ", reason: " + reasonStr);
-                final String finalStateStr = stateStr + " | " + reasonStr;
-                final int finalState = state;
-                mainActivity.runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-
-                    }
-                });
-            }
-        });
-*/
-        nskAlgoSdk.setOnSignalQualityListener(new NskAlgoSdk.OnSignalQualityListener() {
-            @Override
-            public void onSignalQuality(final int level) {
-                mainActivity.setTxtSignalQuality(NskAlgoSignalQuality.values()[level].toString());
-            }
-        });
-
         nskAlgoSdk.setOnAttAlgoIndexListener(new NskAlgoSdk.OnAttAlgoIndexListener() {
             @Override
             public void onAttAlgoIndex(int value) {
                 Log.d(TAG, "NskAlgoAttAlgoIndexListener: Attention:" + value);
                 String attStr = "[" + value + "]";
-                final String finalAttStr = attStr;
-                final int finalValueAtt = value;
                 if(value<50){
                     mainActivity.performLowLevelAction();
                 }
@@ -239,62 +192,40 @@ public class MindwaveConnect{
                 else if(value >=80){
                     mainActivity.performHighLevelAction();
                 }
-                mainActivity.setTxtAttention(finalAttStr);
-                mainActivity.setAttentionProgressBar(finalValueAtt);
+                mainActivity.setTxtAttention(attStr);
+                mainActivity.setAttentionProgressBar(value);
             }
         });
     }
 
-    public void setAlgos() {
-        // check selected algos
-
-        //startButton.setEnabled(false);
-
-        //stopButton.setEnabled(false);
-        //clearAllSeries();
-        //text.setVisibility(View.INVISIBLE);
-        //text.setText("");
-
-        //bpText.setEnabled(false);
-
-        currentSelectedAlgo = NskAlgoType.NSK_ALGO_TYPE_INVALID;
-        //intervalSeekBar.setEnabled(false);
-        //setIntervalButton.setEnabled(false);
-        //intervalText.setText("--");
-
-        //attValue.setText("--");
-        //medValue.setText("--");
-
-        //stateText.setText("");
-        //sqText.setText("");
-
-        //algoTypes += NskAlgoType.NSK_ALGO_TYPE_MED.value;
+    private void setAlgos() {
         algoTypes += NskAlgoType.NSK_ALGO_TYPE_ATT.value;
-        //algoTypes += NskAlgoType.NSK_ALGO_TYPE_BLINK.value;
-        //algoTypes += NskAlgoType.NSK_ALGO_TYPE_BP.value;
-        //bpText.setEnabled(true);
-        //bp_deltaSeries = createSeries("Delta");
-        //bp_thetaSeries = createSeries("Theta");
-        //bp_alphaSeries = createSeries("Alpha");
-        //bp_betaSeries = createSeries("Beta");
-        //bp_gammaSeries = createSeries("Gamma");
-
         if (bInited) {
-            nskAlgoSdk.NskAlgoUninit();
+            NskAlgoSdk.NskAlgoUninit();
             bInited = false;
         }
-        int ret = nskAlgoSdk.NskAlgoInit(algoTypes, mainActivity.getFilesDir().getAbsolutePath());
+        int ret = NskAlgoSdk.NskAlgoInit(algoTypes, mainActivity.getFilesDir().getAbsolutePath());
         if (ret == 0) {
             bInited = true;
         }
     }
 
-    public void mindwaveStart(){
-        nskAlgoSdk.NskAlgoStart(false);
+    void mindwaveStart(){
+        nskAlgoSdk.setOnSignalQualityListener(new NskAlgoSdk.OnSignalQualityListener() {
+            @Override
+            public void onSignalQuality(int level) {
+                //Log.d(TAG, "NskAlgoSignalQualityListener: level: " + level);
+                mainActivity.setTxtSignalQuality(NskAlgoSignalQuality.values()[level].toString());
+                if(NskAlgoSignalQuality.values()[level].toString().equals("POOR")){
+                    mainActivity.btnEmergencyBrakeListener(null);
+                }
+            }
+        });
+        NskAlgoSdk.NskAlgoStart(false);
     }
 
-    public void mindwavePause(){
-        nskAlgoSdk.NskAlgoPause();
+    void mindwavePause(){
+        NskAlgoSdk.NskAlgoPause();
     }
 
 
