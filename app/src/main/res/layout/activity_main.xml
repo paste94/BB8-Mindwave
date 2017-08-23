@@ -7,168 +7,242 @@
     tools:context="com.example.ricca.bb8_mindwave.MainActivity">
 
     <RelativeLayout
-        android:layout_width="368dp"
-        android:layout_height="495dp"
-        tools:layout_editor_absoluteX="8dp"
-        tools:layout_editor_absoluteY="8dp">
+        android:id="@+id/entire_view"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginBottom="8dp"
+        android:layout_marginLeft="8dp"
+        android:layout_marginRight="8dp"
+        android:layout_marginTop="8dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.0"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp">
 
-        <TextView
-            android:id="@+id/textView6"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Attention: "
-            tools:layout_editor_absoluteX="8dp"
-            tools:layout_editor_absoluteY="70dp"
-            android:layout_above="@+id/attentionProgressBar"
-            android:layout_alignParentStart="true" />
-
-        <TextView
-            android:id="@+id/textView"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Signal Quality: "
-            android:layout_alignParentTop="true"
-            android:layout_alignParentStart="true" />
-
-        <TextView
-            android:id="@+id/txtSignalQuality"
+        <LinearLayout
+            android:id="@+id/linearLayout2"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentTop="true"
-            android:layout_toEndOf="@+id/textView"
-            android:text="--" />
+            android:layout_alignStart="@+id/calibrateButton"
+            android:layout_marginStart="29dp"
+            android:orientation="vertical">
 
-        <TextView
-            android:id="@+id/textView3"
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/textView4"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:text="Sphero BB8" />
+
+                <ImageView
+                    android:id="@+id/imgBB8"
+                    android:layout_width="15dp"
+                    android:layout_height="15dp"
+                    android:layout_alignBottom="@+id/imageView"
+                    android:layout_marginEnd="14dp"
+                    android:layout_toStartOf="@+id/imageView"
+                    android:layout_weight="1"
+                    app:srcCompat="@drawable/not_connected" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/textView3"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="   " />
+
+                <TextView
+                    android:id="@+id/robotStatus"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignBottom="@+id/linearLayout"
+                    android:layout_alignEnd="@+id/btnEmergencyBrake"
+                    android:layout_weight="1"
+                    android:text="No robots nearby" />
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/linearLayout"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentStart="true"
-            android:layout_below="@+id/textView"
-            android:layout_marginTop="10dp"
-            android:text="State: " />
+            android:layout_alignParentTop="true"
+            android:orientation="vertical"
+            android:weightSum="1"
+            tools:layout_editor_absoluteX="100dp"
+            tools:layout_editor_absoluteY="70dp">
 
-        <TextView
-            android:id="@+id/txtState"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignBaseline="@+id/textView3"
-            android:layout_alignBottom="@+id/textView3"
-            android:layout_toEndOf="@+id/textView3"
-            android:text="--" />
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="horizontal">
 
-        <TextView
-            android:id="@+id/txtAttention"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_below="@+id/txtState"
-            android:layout_marginStart="17dp"
-            android:layout_marginTop="19dp"
-            android:layout_toEndOf="@+id/txtState"
-            android:text="--" />
+                <TextView
+                    android:id="@+id/textView2"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Mindwave" />
+
+                <ImageView
+                    android:id="@+id/imgMindwave"
+                    android:layout_width="15dp"
+                    android:layout_height="15dp"
+                    android:layout_alignBottom="@+id/imageView"
+                    android:layout_marginEnd="14dp"
+                    android:layout_toStartOf="@+id/imageView"
+                    android:layout_weight="1"
+                    app:srcCompat="@drawable/not_connected" />
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                tools:layout_editor_absoluteX="187dp"
+                tools:layout_editor_absoluteY="97dp">
+
+                <TextView
+                    android:id="@+id/textView"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentStart="true"
+                    android:layout_alignParentTop="true"
+                    android:text="   Signal Quality: "
+                    tools:layout_editor_absoluteX="115dp"
+                    tools:layout_editor_absoluteY="87dp" />
+
+                <TextView
+                    android:id="@+id/txtSignalQuality"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentTop="true"
+                    android:layout_toEndOf="@+id/textView"
+                    android:layout_weight="1"
+                    android:text="--"
+                    tools:layout_editor_absoluteX="8dp"
+                    tools:layout_editor_absoluteY="44dp" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_weight="0.77"
+                android:orientation="horizontal"
+                tools:layout_editor_absoluteX="27dp"
+                tools:layout_editor_absoluteY="46dp">
+
+                <TextView
+                    android:id="@+id/textView6"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignBaseline="@+id/txtAttention"
+                    android:layout_alignBottom="@+id/txtAttention"
+                    android:layout_alignParentStart="true"
+                    android:text="   Attention: "
+                    tools:layout_editor_absoluteX="8dp"
+                    tools:layout_editor_absoluteY="70dp" />
+
+                <TextView
+                    android:id="@+id/txtAttention"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignEnd="@+id/txtSignalQuality"
+                    android:layout_below="@+id/txtState"
+                    android:text="--"
+                    tools:layout_editor_absoluteX="8dp"
+                    tools:layout_editor_absoluteY="0dp" />
+            </LinearLayout>
+
+        </LinearLayout>
 
         <ProgressBar
             android:id="@+id/attentionProgressBar"
             style="?android:attr/progressBarStyleHorizontal"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_alignParentStart="true"
+            android:layout_below="@+id/btnStartMovingRobot"
+            android:layout_marginTop="35dp"
+            android:layout_alignParentEnd="true" />
+
+        <Button
+            android:id="@+id/btnStartMovingRobot"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentStart="true"
+            android:layout_below="@+id/linearLayout"
+            android:layout_marginTop="44dp"
+            android:onClick="mindwaveStartListener"
+            android:text="Start moving Sphero with your mind!" />
+
+        <Button
+            android:id="@+id/btnEmergencyBrake"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
             android:layout_alignParentEnd="true"
-            android:layout_alignParentStart="true"
-            android:layout_below="@+id/txtAttention"
-            android:layout_marginTop="25dp"
-            android:layout_toEndOf="@+id/txtSignalQuality" />
-
-        <TextView
-            android:id="@+id/daStatus"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentStart="true"
-            android:layout_below="@+id/attentionProgressBar"
-            android:layout_marginTop="47dp"
-            android:text="TextView" />
-
-        <TextView
-            android:id="@+id/robotStatus"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentStart="true"
-            android:layout_below="@+id/daStatus"
-            android:layout_marginTop="15dp"
-            android:text="TextView" />
-
-        <Button
-            android:id="@+id/btnRed"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:onClick="ledColorRed"
-            android:text="RED"
-            android:layout_below="@+id/robotStatus"
-            android:layout_alignParentStart="true"
-            android:layout_marginTop="23dp" />
-
-        <Button
-            android:id="@+id/btnGreen"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentStart="true"
-            android:layout_below="@+id/btnRed"
-            android:onClick="ledColorGreen"
-            android:text="GREEN" />
-
-        <Button
-            android:id="@+id/btnBlue"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentStart="true"
-            android:layout_below="@+id/btnGreen"
-            android:onClick="ledColorBlue"
-            android:text="Button" />
-
-        <Button
-            android:id="@+id/btnStart"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentBottom="true"
-            android:text="Start reading your mind"
-            android:onClick="mindwaveStartListener"/>
-
-        <Button
-            android:id="@+id/btnMove"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentBottom="true"
-            android:layout_toEndOf="@+id/btnStart"
-            android:text="move"
-            />
+            android:layout_marginBottom="11dp"
+            android:layout_marginEnd="14dp"
+            android:onClick="btnEmergencyBrakeListener"
+            android:text="Emergency brake" />
 
         <com.orbotix.calibration.api.CalibrationImageButtonView
             android:id="@+id/calibrateButton"
-            android:visibility="visible"
             android:layout_width="60dp"
             android:layout_height="60dp"
+            android:layout_alignParentBottom="true"
+            android:layout_centerHorizontal="true"
+            android:layout_marginBottom="88dp"
             android:background="#00000000"
             android:scaleType="centerInside"
-            app:widget_orientation="above"
-            app:foreground_color="#FFFFFFFF"
+            android:visibility="visible"
             app:background_color="#FF1990FF"
+            app:calibration_center_x="30dp"
+            app:calibration_center_y="-30dp"
             app:calibration_circle_radius="50dp"
-            app:calibration_center_x = "30dp"
-            app:calibration_center_y = "-30dp"
-            android:layout_alignParentBottom="true"
-            android:layout_alignParentEnd="true" />
+            app:foreground_color="#FFFFFFFF"
+            app:widget_orientation="above" />
+
+        <TextView
+            android:id="@+id/textView5"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignBottom="@+id/attentionProgressBar"
+            android:layout_alignParentStart="true"
+            android:layout_marginBottom="18dp"
+            android:text="Attention value" />
 
 
-        <!-- This needs to be the last element in your xml page if you want two finger calibration to work
-         anywhere in your application's page -->
-        <!-- TODO: Decommentare per aggiungere la calibrationView!-->
+        <!--This needs to be the last element in your xml page if you want two finger calibration to work
+         anywhere in your application's page-->
         <com.orbotix.calibration.api.CalibrationView
             android:id="@+id/calibrationView"
             android:layout_width="fill_parent"
             android:layout_height="fill_parent"
-            app:twoFingerEnabled="true"
-            />
-
-        <!-- In this case, we want fragments to display over the calibration view -->
-
+            app:twoFingerEnabled="true"/>
+        <!--In this case, we want fragments to display over the calibration view-->
     </RelativeLayout>
 
 </android.support.constraint.ConstraintLayout>

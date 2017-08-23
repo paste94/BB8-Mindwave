@@ -1,6 +1,7 @@
 package com.example.ricca.bb8_mindwave;
 
 import android.bluetooth.BluetoothAdapter;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -10,87 +11,80 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
+
 import com.orbotix.calibration.api.CalibrationEventListener;
 import com.orbotix.calibration.api.CalibrationImageButtonView;
 import com.orbotix.calibration.api.CalibrationView;
 
 public class MainActivity extends AppCompatActivity {
 
-    private TextView txtSignalQuality;
-    private TextView txtState;
-    private TextView txtAttention;
-    private TextView daStatus;
-    private TextView robotStatus;
-    private Button btnRed;
-    private Button btnGreen;
-    private Button btnBlue;
-    private ProgressBar attentionProgressBar;
+    private Button btnStartMovingRobot;
+    private Button btnEmergencyBrake;
+    private ImageView imgMindwave;
+    private ImageView imgBB8;
     private MindwaveConnect mindwaveConnect;
     private BB8Connect bb8Connect;
     private BluetoothAdapter mBluetoothAdapter;
     private CalibrationView calibrationView;
+    private boolean isMindwaveConnected;
+    private boolean isBB8Connected;
     private CalibrationImageButtonView calibrationButtonView;
+    private final BroadcastReceiver mReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            final String action = intent.getAction();
+
+            if (action.equals(BluetoothAdapter.ACTION_STATE_CHANGED)) {
+                final int state = intent.getIntExtra(BluetoothAdapter.EXTRA_STATE,
+                        BluetoothAdapter.ERROR);
+                switch (state) {
+                    case BluetoothAdapter.STATE_OFF:
+                        break;
+                    case BluetoothAdapter.STATE_TURNING_OFF:
+                        reactivateBluetoothOrLocation();
+                        break;
+                    case BluetoothAdapter.STATE_ON:
+                        break;
+                    case BluetoothAdapter.STATE_TURNING_ON:
+                        break;
+                }
+            }
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        this.txtSignalQuality = (TextView) findViewById(R.id.txtSignalQuality);
-        this.txtState = (TextView) findViewById(R.id.txtState);
-        this.txtAttention = (TextView) findViewById(R.id.txtAttention);
-        this.attentionProgressBar = (ProgressBar) findViewById(R.id.attentionProgressBar);
-        this.daStatus = (TextView) findViewById(R.id.daStatus);
-        this.robotStatus = (TextView) findViewById(R.id.robotStatus);
-        this.btnRed = (Button) findViewById(R.id.btnRed);
-        this.btnGreen = (Button) findViewById(R.id.btnGreen);
-        this.btnBlue = (Button) findViewById(R.id.btnBlue);
-        this.mindwaveConnect = new MindwaveConnect(this);
+        this.imgBB8 = (ImageView) findViewById(R.id.imgBB8);
+        this.imgMindwave = (ImageView) findViewById(R.id.imgMindwave);
+        this.mindwaveConnect = new MindwaveConnect(this, 70);
         this.bb8Connect = new BB8Connect(this);
-        this.enableColorButtons(false);
-        this.setBtnMove();
+        this.btnStartMovingRobot = (Button)findViewById(R.id.btnStartMovingRobot);
+        this.btnEmergencyBrake = (Button)findViewById(R.id.btnEmergencyBrake);
+        this.isBB8Connected = false;
+        this.isMindwaveConnected = false;
+        this.btnStartMovingRobot.setEnabled(false);
+        this.btnEmergencyBrake.setEnabled(false);
 
         // Register for broadcasts on BluetoothAdapter state change
         IntentFilter filter = new IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED);
-        this.registerReceiver(bb8Connect.getReceiver(), filter);
+        this.registerReceiver(mReceiver, filter);
 
         // Check if bluetooth or location are still enabled
         this.reactivateBluetoothOrLocation();
-
-
-        mindwaveConnect.connect();
-
-        bb8Connect.startDiscovery();
-
         setupCalibration();
-
-        //mindwaveConnect.setAlgos();
-        //mindwaveConnect.mindwaveStart();
+        mindwaveConnect.connect();
+        bb8Connect.startDiscovery();
+        enableCalibration();
     }
 
-    public void setBtnMove(){
-        Button btnMove = (Button)findViewById(R.id.btnMove);
-        btnMove.setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View view, MotionEvent motionEvent) {
-                if(motionEvent.getAction() == MotionEvent.ACTION_DOWN) {
-                    bb8Connect.moveForward(0, (float) 0.1);
-                    //System.out.println("pressed");
-                    return true;
-                }
-                if(motionEvent.getAction() == MotionEvent.ACTION_UP){
-                    bb8Connect.stopRobot();
-                }
-                return false;
-            }
-        });
-    }
-    /**
-     * Sets up the calibration gesture and button
-     */
+    //Metodi per il tasto di orientamento robot
     private void setupCalibration() {
         // Get the view from the xml file
         calibrationView = (CalibrationView)findViewById(R.id.calibrationView);
@@ -143,8 +137,28 @@ public class MainActivity extends AppCompatActivity {
         calibrationButtonView = (CalibrationImageButtonView) findViewById(R.id.calibrateButton);
         calibrationButtonView.setCalibrationView(calibrationView);
         calibrationButtonView.setEnabled(false);
+
+
+    }
+    private void enableCalibration(){
+        // Here, you need to route all the touch life to the joystick and calibration view so that they know about
+        // them. To do this, you need a way to reference the view (in this case, the id "entire_view") and attach
+        // an onTouchListener which in this case is declared anonymously and invokes the
+        // Controller#interpretMotionEvent() method on the joystick and the calibration view.
+        findViewById(R.id.entire_view).setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                calibrationView.interpretMotionEvent(event);
+                return true;
+            }
+        });
+
+        // Don't forget to turn on UI elements
+        calibrationView.setEnabled(true);
+        calibrationButtonView.setEnabled(true);
     }
 
+    //Attivazione automatica di bluetooth e GPS
     public void reactivateBluetoothOrLocation(){
         // Check if location is still enabled
         final LocationManager mLocationManager = (LocationManager) getSystemService( Context.LOCATION_SERVICE );
@@ -159,40 +173,78 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    public void setTxtSignalQuality(String s){
-        this.txtSignalQuality.setText(s);
+    //Metodi per la gestione della UI
+    public void setTxtSignalQuality(final String s){
+        this.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                ((TextView)findViewById(R.id.txtSignalQuality)).setText(s);
+            }
+        });
     }
-    public void setTxtState(String s){
-        this.txtState.setText(s);
+    public void setTxtAttention(final String s){
+        this.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                ((TextView)findViewById(R.id.txtAttention)).setText(s);
+            }
+        });
     }
-    public void setTxtAttention(String s){
-        this.txtAttention.setText(s);
+    public void setAttentionProgressBar(final int n){
+        this.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                ((ProgressBar)findViewById(R.id.attentionProgressBar)).setProgress(n);
+            }
+        });
     }
-    public void setAttentionProgressBar(int n){
-        this.attentionProgressBar.setProgress(n);
+    public void setTxtRobotStatus(final String s){
+        this.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                ((TextView)findViewById(R.id.robotStatus)).setText(s);
+            }
+        });
     }
-    public void setDaStatus(String s){
-        this.daStatus.setText(s);
+    private void setImgMindwaveConnected(){
+        this.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                ((ImageView)findViewById(R.id.imgMindwave)).setImageResource(R.drawable.connected);
+            }
+        });
     }
-    public void setRobotStatus(String s){
-        this.robotStatus.setText(s);
+    private void setImgMindwaveNotConnected(){
+        this.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                ((ImageView)findViewById(R.id.imgMindwave)).setImageResource(R.drawable.not_connected);
+            }
+        });    }
+    private void setImgBB8Connected(){
+        this.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                ((ImageView)findViewById(R.id.imgBB8)).setImageResource(R.drawable.connected);
+            }
+        });
     }
-
-    public void ledColorRed(View v){
-        bb8Connect.setRobotLed(1, 0, 0);
+    private void setImgBB8NotConnected(){
+        this.runOnUiThread(new Runnable() {
+        @Override
+        public void run() {
+            ((ImageView)findViewById(R.id.imgBB8)).setImageResource(R.drawable.not_connected);
+        }
+    });
     }
-    public void ledColorGreen(View v){
-        bb8Connect.setRobotLed(0, 1, 0);
+    private void doIHaveToEnableButtons(){
+        if(this.isMindwaveConnected && this.isBB8Connected){
+            enableControlButtons(true);
+        }
+        else {
+            enableControlButtons(false);
+        }
     }
-    public void ledColorBlue(View v){
-        bb8Connect.setRobotLed(0, 0, 1);
-    }
-    public void mindwaveStartListener(View v){ mindwaveConnect.mindwaveStart();}
-
-    public String getDaStatus(){
-        return (String) this.daStatus.getText();
-    }
-
     public void showToast(final String msg, final int timeStyle) {
         this.runOnUiThread(new Runnable() {
             public void run() {
@@ -202,10 +254,65 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    public void enableColorButtons(boolean b){
-        btnRed.setEnabled(b);
-        btnGreen.setEnabled(b);
-        btnBlue.setEnabled(b);
+    //Metodi di decisione: Cosa fare quando un device viene colleato o scollegato
+    public void mindwaveConnected(boolean b){
+        this.isMindwaveConnected = b;
+        this.doIHaveToEnableButtons();
+        if(b){
+            setImgMindwaveConnected();
+        }else {
+            setImgMindwaveNotConnected();
+        }
     }
-    
+    public void BB8Connected(boolean b){
+        this.isBB8Connected = b;
+        this.doIHaveToEnableButtons();
+        if(b){
+            setImgBB8Connected();
+        }else{
+            setImgBB8NotConnected();
+        }
+    }
+    private void enableControlButtons(final boolean enable){
+        this.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                btnStartMovingRobot.setEnabled(enable);
+                btnEmergencyBrake.setEnabled(enable);
+            }
+        });
+    }
+
+    //listener dei bottoni
+    public void mindwaveStartListener(View v){
+        mindwaveConnect.mindwaveStart();
+        this.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                findViewById(R.id.btnStartMovingRobot).setEnabled(false);
+            }
+        });
+    }
+    public void btnEmergencyBrakeListener(View v){
+        ((ProgressBar)findViewById(R.id.attentionProgressBar)).setProgress(0);
+        this.mindwaveConnect.mindwavePause();
+        this.bb8Connect.stopRobot();
+        this.bb8Connect.setRobotLedBlue();
+        this.btnStartMovingRobot.setEnabled(true);
+        this.setTxtAttention("--");
+    }
+
+    //Azioni da eseguire quando il Mindwave registra un determinato valore
+    public void performLowLevelAction(){
+        bb8Connect.stopRobot();
+        bb8Connect.setRobotLedBlue();
+    }
+    public void performMidLevelAction(){
+        bb8Connect.moveForward(0.1);
+        bb8Connect.setRobotLedGreen();
+    }
+    public void performHighLevelAction(){
+        bb8Connect.moveForward(0.2);
+        bb8Connect.setRobotLedRed();
+    }
 }

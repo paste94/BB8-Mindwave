@@ -1,9 +1,5 @@
 package com.example.ricca.bb8_mindwave;
 
-import android.bluetooth.BluetoothAdapter;
-import android.content.BroadcastReceiver;
-import android.content.Context;
-import android.content.Intent;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -30,13 +26,8 @@ public class BB8Connect implements RobotChangedStateListener {
     private DiscoveryAgentEventListener _discoveryAgentEventListener = new DiscoveryAgentEventListener() {
         @Override
         public void handleRobotsAvailable(List<Robot> robots) {
-            mainActivity.setDaStatus("Found " + robots.size() + " robots");
-
-            for (Robot robot : robots) {
-                mainActivity.setDaStatus(mainActivity.getDaStatus().toString() + "\n" + robot.getName());
-            }
+            mainActivity.setTxtRobotStatus("Robot found!");
         }
-
     };
     private RobotChangedStateListener robotStateListener = new RobotChangedStateListener() {
         @Override
@@ -46,71 +37,38 @@ public class BB8Connect implements RobotChangedStateListener {
                     stopDiscovery();
 
 
-                    mainActivity.setRobotStatus("Robot " + r.getName() + " is Online!");
+                    mainActivity.setTxtRobotStatus("Robot " + r.getName() + " is Online!");
                     robot = new Sphero(r);
 
                     // Finally for visual feedback let's turn the robot green saying that it's been connected
                     robot.setLed(0f, 1f, 0f);
 
                     robot.enableCollisions(true); // Enabling the collisions detector
-
-                    mainActivity.enableColorButtons(true);
-
-                    //newGameButton.setEnabled(true);
-                    //newGameButton.setClickable(true);
+                    mainActivity.BB8Connected(true);
                     break;
                 case Offline:
-                    mainActivity.setRobotStatus("Robot " + r.getName() + " is now Offline!");
-                    //newGameButton.setClickable(false);
-                    //newGameButton.setEnabled(false);
+                    mainActivity.setTxtRobotStatus("Robot " + r.getName() + " is now Offline!");
+                    mainActivity.BB8Connected(false);
                     startDiscovery();
                     break;
                 case Connecting:
-                    mainActivity.setRobotStatus("Connecting to " + r.getName());
-                    //newGameButton.setClickable(false);
-                    //newGameButton.setEnabled(false);
+                    mainActivity.setTxtRobotStatus("Connecting to " + r.getName());
+                    mainActivity.BB8Connected(false);
                     break;
                 case Connected:
-                    mainActivity.setRobotStatus("Connected to " + r.getName());
-                    //newGameButton.setClickable(false);
-                    //newGameButton.setEnabled(false);
+                    mainActivity.setTxtRobotStatus("Connected to " + r.getName());
+                    mainActivity.BB8Connected(false);
                     break;
                 case Disconnected:
-                    mainActivity.setRobotStatus("Disconnected from " + r.getName());
-                    //newGameButton.setClickable(false);
-                    //newGameButton.setEnabled(false);
+                    mainActivity.setTxtRobotStatus("Disconnected from " + r.getName());
+                    mainActivity.BB8Connected(false);
                     startDiscovery();
                     break;
                 case FailedConnect:
-                    mainActivity.setRobotStatus("Failed to connect to " + r.getName());
-                    //newGameButton.setClickable(false);
-                    //newGameButton.setEnabled(false);
+                    mainActivity.setTxtRobotStatus("Failed to connect to " + r.getName());
+                    mainActivity.BB8Connected(false);
                     startDiscovery();
                     break;
-            }
-        }
-    };
-
-
-    private final BroadcastReceiver mReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            final String action = intent.getAction();
-
-            if (action.equals(BluetoothAdapter.ACTION_STATE_CHANGED)) {
-                final int state = intent.getIntExtra(BluetoothAdapter.EXTRA_STATE,
-                        BluetoothAdapter.ERROR);
-                switch (state) {
-                    case BluetoothAdapter.STATE_OFF:
-                        break;
-                    case BluetoothAdapter.STATE_TURNING_OFF:
-                        mainActivity.reactivateBluetoothOrLocation();
-                        break;
-                    case BluetoothAdapter.STATE_ON:
-                        break;
-                    case BluetoothAdapter.STATE_TURNING_ON:
-                        break;
-                }
             }
         }
     };
@@ -161,16 +119,24 @@ public class BB8Connect implements RobotChangedStateListener {
         }
     }
 
-    public BroadcastReceiver getReceiver(){
-        return this.mReceiver;
-    }
-
     public void setRobotLed(int r, int g, int b){
         this.robot.setLed(r, g, b);
     }
-    
-    public void moveForward(float heading, float velocity ){
-        this.robot.drive(heading, velocity);
+
+    public void setRobotLedRed(){
+        robot.setLed(1,0,0);
+    }
+
+    public void setRobotLedGreen(){
+        robot.setLed(0,1,0);
+    }
+
+    public void setRobotLedBlue(){
+        robot.setLed(0,0,1);
+    }
+
+    public void moveForward(double velocity ){
+        this.robot.drive(0, (float) velocity);
     }
 
     public void stopRobot(){

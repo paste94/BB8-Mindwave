@@ -11,7 +11,6 @@ import android.widget.Toast;
 import com.neurosky.AlgoSdk.NskAlgoDataType;
 import com.neurosky.AlgoSdk.NskAlgoSdk;
 import com.neurosky.AlgoSdk.NskAlgoSignalQuality;
-import com.neurosky.AlgoSdk.NskAlgoState;
 import com.neurosky.AlgoSdk.NskAlgoType;
 import com.neurosky.connection.ConnectionStates;
 import com.neurosky.connection.DataType.MindDataType;
@@ -22,13 +21,15 @@ import com.neurosky.connection.TgStreamReader;
 public class MindwaveConnect{
     final String TAG = "MainActivityTag";
 
+    public int algoTypes = 0;// = NskAlgoType.NSK_ALGO_TYPE_CR.value;
     private NskAlgoSdk nskAlgoSdk;
-    //private short raw_data[] = {0};
-    //private int raw_data_index= 0;
     private TgStreamReader tgStreamReader;
     private BluetoothAdapter mBluetoothAdapter;
     private MainActivity mainActivity;
     private boolean bRunning = false;
+    private NskAlgoType currentSelectedAlgo;
+    private boolean bInited = false;
+    private int limit;
     private TgStreamHandler callback = new TgStreamHandler() {
         @Override
         public void onStatesChanged(int connectionStates) {
@@ -36,27 +37,28 @@ public class MindwaveConnect{
             Log.d(TAG, "connectionStates change to: " + connectionStates);
             switch (connectionStates) {
                 case ConnectionStates.STATE_CONNECTING:
-                    showToast("MindWave is connecting... ", Toast.LENGTH_LONG);
+                    mainActivity.showToast("MindWave is connecting... ", Toast.LENGTH_SHORT);
                     System.out.println("MindWave: Connecting... ");
+                    mainActivity.mindwaveConnected(false);
                     // Do something when connecting
                     break;
                 case ConnectionStates.STATE_CONNECTED:
                     // Do something when connected
                     tgStreamReader.start();
-                    showToast("Connected", Toast.LENGTH_SHORT);
+                    mainActivity.showToast("Connected", Toast.LENGTH_SHORT);
                     System.out.println("MindWave: Connected!");
+                    mainActivity.mindwaveConnected(true);
                     break;
                 // TODO: Attivare automaticamente quello che fa il bottone SetAlgos!!!
                 case ConnectionStates.STATE_WORKING:
+                    mainActivity.showToast("WORKING", Toast.LENGTH_SHORT);
                     // Do something when working
 
                     //(9) demo of recording raw data , stop() will call stopRecordRawData,
                     //or you can add a button to control it.
                     //You can change the save path by calling setRecordStreamFilePath(String filePath) before startRecordRawData
-                    //tgStreamReader.startRecordRawData();
 
                     setAlgos();
-                    System.out.println("MindWave: Algos setted");
 
                     break;
                 case ConnectionStates.STATE_GET_DATA_TIME_OUT:
@@ -65,31 +67,46 @@ public class MindwaveConnect{
                     //(9) demo of recording raw data, exception handling
                     //tgStreamReader.stopRecordRawData();
 
-                    showToast("Get data time out!", Toast.LENGTH_SHORT);
+                    mainActivity.showToast("Get data time out!", Toast.LENGTH_SHORT);
 
                     if (tgStreamReader != null && tgStreamReader.isBTConnected()) {
                         tgStreamReader.stop();
                         tgStreamReader.close();
                     }
-
+                    //connect();
                     break;
                 case ConnectionStates.STATE_STOPPED:
-                    // Do something when stopped
-                    // We have to call tgStreamReader.stop() and tgStreamReader.close() much more than
-                    // tgStreamReader.connectAndstart(), because we have to prepare for that.
+                    mainActivity.showToast("STOPPED", Toast.LENGTH_SHORT);
+                    break;
+                case ConnectionStates.STATE_DISCONNECTED: //Quando viene spento mentre è connesso
+                    // Do something when disconnected
+                    mainActivity.showToast("DISCONECTED", Toast.LENGTH_SHORT);
+
+                    mainActivity.mindwaveConnected(false);
+                    mainActivity.setTxtSignalQuality("--");
+                    mainActivity.setTxtAttention("--");
+                    mainActivity.setAttentionProgressBar(0);
+                    mainActivity.btnEmergencyBrakeListener(null);
+                    //nskAlgoSdk.NskAlgoStop();
+                    //nskAlgoSdk.NskAlgoStop();
+                    nskAlgoSdk.NskAlgoUninit();
+                    connect();
 
                     break;
-                case ConnectionStates.STATE_DISCONNECTED:
-                    // Do something when disconnected
-                    break;
                 case ConnectionStates.STATE_ERROR:
+
+                    mainActivity.mindwaveConnected(false);
                     // Do something when you get error message
+                    //connect();
                     break;
-                case ConnectionStates.STATE_FAILED:
+                case ConnectionStates.STATE_FAILED: //Quando è spento
+                    mainActivity.showToast("FAILED", Toast.LENGTH_SHORT);
+
                     // Do something when you get failed message
                     // It always happens when open the BluetoothSocket error or timeout
                     // Maybe the device is not working normal.
                     // Maybe you have to try again
+                    connect();
                     break;
             }
         }
@@ -139,27 +156,21 @@ public class MindwaveConnect{
             }
         }
     };
-    private NskAlgoType currentSelectedAlgo;
-    private boolean bInited = false;
-    int algoTypes = 0;// = NskAlgoType.NSK_ALGO_TYPE_CR.value;
 
-
-    public MindwaveConnect(MainActivity mainActivity){
+    public MindwaveConnect(MainActivity mainActivity, int limit){
         this.mainActivity = mainActivity;
+        this.limit = limit;
     }
 
     public void connect(){
         nskAlgoSdk = new NskAlgoSdk();
-
-        //raw_data = new short[512];
-        //raw_data_index = 0;
-
         mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
 
         // Example of constructor public TgStreamReader(BluetoothAdapter ba, TgStreamHandler tgStreamHandler)
         tgStreamReader = new TgStreamReader(mBluetoothAdapter,callback);
 
-        if(tgStreamReader != null && tgStreamReader.isBTConnected()){
+        //TODO: Continua a provare a connetterti finchè puoi. Se il while blocca, crea thread separato.
+        if(tgStreamReader != null && tgStreamReader.isBTConnected()) {
 
             // Prepare for connecting
             tgStreamReader.stop();
@@ -174,18 +185,10 @@ public class MindwaveConnect{
             @Override
             public void onSignalQuality(int level) {
                 //Log.d(TAG, "NskAlgoSignalQualityListener: level: " + level);
-                final int fLevel = level;
-                mainActivity.runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        // change UI elements here
-                        String stateQuality = NskAlgoSignalQuality.values()[fLevel].toString();
-                        mainActivity.setTxtSignalQuality(stateQuality);
-                    }
-                });
+                mainActivity.setTxtSignalQuality(NskAlgoSignalQuality.values()[level].toString());
             }
         });
-
+/*
         nskAlgoSdk.setOnStateChangeListener(new NskAlgoSdk.OnStateChangeListener() {
             @Override
             public void onStateChange(int state, int reason) {
@@ -207,92 +210,19 @@ public class MindwaveConnect{
                 mainActivity.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        // change UI elements here
-                        mainActivity.setTxtState(finalStateStr);
-                        /*
-                        if (finalState == NskAlgoState.NSK_ALGO_STATE_RUNNING.value || finalState == NskAlgoState.NSK_ALGO_STATE_COLLECTING_BASELINE_DATA.value) {
-                            bRunning = true;
-                            startButton.setText("Pausa");
-                            startButton.setEnabled(true);
-                            stopButton.setEnabled(true);
-                        } else if (finalState == NskAlgoState.NSK_ALGO_STATE_STOP.value) {
-                            bRunning = false;
-                            raw_data = null;
-                            raw_data_index = 0;
-                            startButton.setText("Start");
-                            startButton.setEnabled(true);
-                            stopButton.setEnabled(false);
 
-                            connectButton.setEnabled(true);
-                            //cannedButton.setEnabled(true);
-
-                            if (tgStreamReader != null && tgStreamReader.isBTConnected()) {
-
-                                // Prepare for connecting
-                                tgStreamReader.stop();
-                                tgStreamReader.close();
-                            }
-
-                            output_data_count = 0;
-                            output_data = null;
-
-                            System.gc();
-                        } else if (finalState == NskAlgoState.NSK_ALGO_STATE_PAUSE.value) {
-                            bRunning = false;
-                            startButton.setText("Start");
-                            startButton.setEnabled(true);
-                            stopButton.setEnabled(true);
-                        } else if (finalState == NskAlgoState.NSK_ALGO_STATE_ANALYSING_BULK_DATA.value) {
-                            bRunning = true;
-                            startButton.setText("Start");
-                            startButton.setEnabled(false);
-                            stopButton.setEnabled(true);
-                        } else if (finalState == NskAlgoState.NSK_ALGO_STATE_INITED.value || finalState == NskAlgoState.NSK_ALGO_STATE_UNINTIED.value) {
-                            bRunning = false;
-                            startButton.setText("Start");
-                            startButton.setEnabled(true);
-                            stopButton.setEnabled(false);
-                        }
-                        */
-                    }
-                });
-            }
-        });
-
-        nskAlgoSdk.setOnSignalQualityListener(new NskAlgoSdk.OnSignalQualityListener() {
-            @Override
-            public void onSignalQuality(final int level) {
-                mainActivity.runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        // change UI elements here
-                        String sqStr = NskAlgoSignalQuality.values()[level].toString();
-                        mainActivity.setTxtSignalQuality(sqStr);
-                    }
-                });
-            }
-        });
-/*
-        nskAlgoSdk.setOnBPAlgoIndexListener(new NskAlgoSdk.OnBPAlgoIndexListener() {
-            @Override
-            public void onBPAlgoIndex(float delta, float theta, float alpha, float beta, float gamma) {
-                Log.d(TAG, "NskAlgoBPAlgoIndexListener: BP: D[" + delta + " dB] T[" + theta + " dB] A[" + alpha + " dB] B[" + beta + " dB] G[" + gamma + "]");
-
-                final float fDelta = delta, fTheta = theta, fAlpha = alpha, fBeta = beta, fGamma = gamma;
-                mainActivity.runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        // change UI elements here
-                        AddValueToPlot(bp_deltaSeries, fDelta);
-                        AddValueToPlot(bp_thetaSeries, fTheta);
-                        AddValueToPlot(bp_alphaSeries, fAlpha);
-                        AddValueToPlot(bp_betaSeries, fBeta);
-                        AddValueToPlot(bp_gammaSeries, fGamma);
                     }
                 });
             }
         });
 */
+        nskAlgoSdk.setOnSignalQualityListener(new NskAlgoSdk.OnSignalQualityListener() {
+            @Override
+            public void onSignalQuality(final int level) {
+                mainActivity.setTxtSignalQuality(NskAlgoSignalQuality.values()[level].toString());
+            }
+        });
+
         nskAlgoSdk.setOnAttAlgoIndexListener(new NskAlgoSdk.OnAttAlgoIndexListener() {
             @Override
             public void onAttAlgoIndex(int value) {
@@ -300,101 +230,19 @@ public class MindwaveConnect{
                 String attStr = "[" + value + "]";
                 final String finalAttStr = attStr;
                 final int finalValueAtt = value;
-                //TODO add here code to show
-
-                if(value<30){
-                    //mainActivity.ledColorBlue(null);
+                if(value<50){
+                    mainActivity.performLowLevelAction();
                 }
-                else if(value>=30 && value<80){
-                    //mainActivity.ledColorGreen(null);
+                else if(value>=50 && value<80){
+                    mainActivity.performMidLevelAction();
                 }
                 else if(value >=80){
-                    //mainActivity.ledColorRed(null);
-
+                    mainActivity.performHighLevelAction();
                 }
-
-                /*
-                VolleyClient.volleyRequest("http://192.168.4.1/attenzione?value="+value, getApplicationContext());
-
-                if(value>50){
-                    VolleyClient.volleyRequest("http://192.168.4.1/sinistra", getApplicationContext());
-                }
-                if(value>80){
-                    System.out.println("la lampadina si accende");
-                    VolleyClient.volleyRequest("http://192.168.4.1/sinistra", getApplicationContext());
-                }
-                */
-
-
-
-                mainActivity.runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        // change UI elements here
-                        mainActivity.setTxtAttention(finalAttStr);
-                        mainActivity.setAttentionProgressBar(finalValueAtt);
-                        /*
-                        if(finalValueAtt>70){
-                            blinkImage.setImageResource(R.mipmap.led_on);
-                        }
-                        if(finalValueAtt<40){
-                            blinkImage.setImageResource(R.mipmap.led_off);
-                        }
-                        */
-
-                    }
-                });
+                mainActivity.setTxtAttention(finalAttStr);
+                mainActivity.setAttentionProgressBar(finalValueAtt);
             }
         });
-/*
-        nskAlgoSdk.setOnMedAlgoIndexListener(new NskAlgoSdk.OnMedAlgoIndexListener() {
-            @Override
-            public void onMedAlgoIndex(int value) {
-                Log.d(TAG, "NskAlgoMedAlgoIndexListener: Meditation:" + value);
-                String medStr = "[" + value + "]";
-                final String finalMedStr = medStr;
-                VolleyClient.volleyRequest("http://192.168.4.1/meditazione?value="+value, getApplicationContext());
-                if(value>80){
-                    System.out.println("sei rilassatissimo!");
-                }
-
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        // change UI elements here
-                        medValue.setText(finalMedStr);
-                    }
-                });
-            }
-        });
-*/
-/*
-        nskAlgoSdk.setOnEyeBlinkDetectionListener(new NskAlgoSdk.OnEyeBlinkDetectionListener() {
-            @Override
-            public void onEyeBlinkDetect(int strength) {
-                Log.d(TAG, "NskAlgoEyeBlinkDetectionListener: Eye blink detected: " + strength);
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        //blinkImage.setImageResource(R.mipmap.led_on);
-                        Timer timer = new Timer();
-
-                        timer.schedule(new TimerTask() {
-                            public void run() {
-                                runOnUiThread(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        //blinkImage.setImageResource(R.mipmap.led_off);
-                                    }
-                                });
-                            }
-                        }, 500);
-                    }
-                });
-            }
-        });
-*/
-
     }
 
     public void setAlgos() {
@@ -442,45 +290,12 @@ public class MindwaveConnect{
     }
 
     public void mindwaveStart(){
-        if (bRunning == false) {
-            nskAlgoSdk.NskAlgoStart(false);
-        } else {
-            nskAlgoSdk.NskAlgoPause();
-        }
+        nskAlgoSdk.NskAlgoStart(false);
     }
 
-    /*
-        private void clearAllSeries () {
-            if (bp_deltaSeries != null) {
-                plot.removeSeries(bp_deltaSeries);
-                bp_deltaSeries = null;
-            }
-            if (bp_thetaSeries != null) {
-                plot.removeSeries(bp_thetaSeries);
-                bp_thetaSeries = null;
-            }
-            if (bp_alphaSeries != null) {
-                plot.removeSeries(bp_alphaSeries);
-                bp_alphaSeries = null;
-            }
-            if (bp_betaSeries != null) {
-                plot.removeSeries(bp_betaSeries);
-                bp_betaSeries = null;
-            }
-            if (bp_gammaSeries != null) {
-                plot.removeSeries(bp_gammaSeries);
-                bp_gammaSeries = null;
-            }
-            plot.setVisibility(View.INVISIBLE);
-            System.gc();
-        }
-    */
-    public void showToast(final String msg, final int timeStyle) {
-        mainActivity.runOnUiThread(new Runnable() {
-            public void run() {
-                Toast.makeText(mainActivity.getApplicationContext(), msg, timeStyle).show();
-            }
-
-        });
+    public void mindwavePause(){
+        nskAlgoSdk.NskAlgoPause();
     }
+
+
 }
