@@ -23,36 +23,93 @@
         android:layout_marginStart="8dp"
         android:layout_marginEnd="8dp">
 
+        <com.orbotix.calibration.api.CalibrationView
+            android:id="@+id/calibrationView"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            app:twoFingerEnabled="true" />
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_below="@+id/linearLayout2"
+            android:layout_alignParentStart="true"
+            android:layout_marginTop="14dp"
+            android:id="@+id/linearLayout4">
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/textView7"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Myo" />
+
+                <ImageView
+                    android:id="@+id/imgMyo"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="14dp"
+                    android:layout_weight="1"
+                    android:paddingLeft="5dp"
+                    app:srcCompat="@drawable/not_connected" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/textView9"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="   " />
+
+                <TextView
+                    android:id="@+id/txtMyoStatus"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="No bracelets nearby" />
+            </LinearLayout>
+        </LinearLayout>
+
         <LinearLayout
             android:id="@+id/linearLayout2"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignParentTop="true"
-            android:layout_alignStart="@+id/calibrateButton"
-            android:layout_marginStart="29dp"
-            android:orientation="vertical">
+            android:orientation="vertical"
+            android:layout_marginTop="13dp"
+            android:layout_below="@+id/linearLayout"
+            android:layout_alignParentStart="true">
 
             <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:orientation="horizontal">
 
                 <TextView
                     android:id="@+id/textView4"
                     android:layout_width="wrap_content"
-                    android:layout_height="match_parent"
+                    android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:text="Sphero BB8" />
 
                 <ImageView
                     android:id="@+id/imgBB8"
-                    android:layout_width="15dp"
-                    android:layout_height="15dp"
-                    android:layout_alignBottom="@+id/imageView"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
                     android:layout_marginEnd="14dp"
-                    android:layout_toStartOf="@+id/imageView"
                     android:layout_weight="1"
+                    android:paddingLeft="5dp"
                     app:srcCompat="@drawable/not_connected" />
             </LinearLayout>
 
@@ -93,8 +150,8 @@
             tools:layout_editor_absoluteY="70dp">
 
             <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
                 android:orientation="horizontal">
 
                 <TextView
@@ -106,12 +163,13 @@
 
                 <ImageView
                     android:id="@+id/imgMindwave"
-                    android:layout_width="15dp"
-                    android:layout_height="15dp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
                     android:layout_alignBottom="@+id/imageView"
                     android:layout_marginEnd="14dp"
                     android:layout_toStartOf="@+id/imageView"
                     android:layout_weight="1"
+                    android:paddingLeft="5dp"
                     app:srcCompat="@drawable/not_connected" />
 
             </LinearLayout>
@@ -143,36 +201,7 @@
                     android:text="--"
                     tools:layout_editor_absoluteX="8dp"
                     tools:layout_editor_absoluteY="44dp" />
-            </LinearLayout>
 
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:layout_weight="0.77"
-                android:orientation="horizontal"
-                tools:layout_editor_absoluteX="27dp"
-                tools:layout_editor_absoluteY="46dp">
-
-                <TextView
-                    android:id="@+id/textView6"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_alignBaseline="@+id/txtAttention"
-                    android:layout_alignBottom="@+id/txtAttention"
-                    android:layout_alignParentStart="true"
-                    android:text="   Attention: "
-                    tools:layout_editor_absoluteX="8dp"
-                    tools:layout_editor_absoluteY="70dp" />
-
-                <TextView
-                    android:id="@+id/txtAttention"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_alignEnd="@+id/txtSignalQuality"
-                    android:layout_below="@+id/txtState"
-                    android:text="--"
-                    tools:layout_editor_absoluteX="8dp"
-                    tools:layout_editor_absoluteY="0dp" />
             </LinearLayout>
 
         </LinearLayout>
@@ -182,20 +211,55 @@
             style="?android:attr/progressBarStyleHorizontal"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_above="@+id/calibrateButton"
             android:layout_alignParentStart="true"
-            android:layout_below="@+id/btnStartMovingRobot"
-            android:layout_marginTop="35dp"
+            android:layout_marginBottom="53dp"
             android:layout_alignParentEnd="true" />
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="0.77"
+            android:orientation="horizontal"
+            android:weightSum="1"
+            tools:layout_editor_absoluteX="27dp"
+            tools:layout_editor_absoluteY="46dp"
+            android:layout_alignBottom="@+id/attentionProgressBar"
+            android:layout_alignParentStart="true"
+            android:layout_marginBottom="15dp"
+            android:id="@+id/linearLayout3">
+
+            <TextView
+                android:id="@+id/textView6"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignBaseline="@+id/txtAttention"
+                android:layout_alignBottom="@+id/txtAttention"
+                android:layout_alignParentStart="true"
+                android:text="   Attention: "
+                tools:layout_editor_absoluteX="8dp"
+                tools:layout_editor_absoluteY="70dp" />
+
+            <TextView
+                android:id="@+id/txtAttention"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignRight="@+id/textView5"
+                android:layout_weight="1"
+                android:text="--"
+                tools:layout_editor_absoluteX="8dp"
+                tools:layout_editor_absoluteY="0dp" />
+
+        </LinearLayout>
 
         <Button
             android:id="@+id/btnStartMovingRobot"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignParentStart="true"
-            android:layout_below="@+id/linearLayout"
-            android:layout_marginTop="44dp"
             android:onClick="mindwaveStartListener"
-            android:text="Start moving Sphero with your mind!" />
+            android:text="Start moving Sphero with your mind!"
+            android:layout_above="@+id/linearLayout3"
+            android:layout_alignParentStart="true" />
 
         <Button
             android:id="@+id/btnEmergencyBrake"
@@ -212,9 +276,6 @@
             android:id="@+id/calibrateButton"
             android:layout_width="60dp"
             android:layout_height="60dp"
-            android:layout_alignParentBottom="true"
-            android:layout_centerHorizontal="true"
-            android:layout_marginBottom="88dp"
             android:background="#00000000"
             android:scaleType="centerInside"
             android:visibility="visible"
@@ -223,25 +284,15 @@
             app:calibration_center_y="-30dp"
             app:calibration_circle_radius="50dp"
             app:foreground_color="#FFFFFFFF"
-            app:widget_orientation="above" />
-
-        <TextView
-            android:id="@+id/textView5"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignBottom="@+id/attentionProgressBar"
+            app:widget_orientation="above"
+            android:layout_alignBottom="@+id/btnEmergencyBrake"
             android:layout_alignParentStart="true"
-            android:layout_marginBottom="18dp"
-            android:text="Attention value" />
+            android:layout_marginStart="11dp" />
 
 
         <!--This needs to be the last element in your xml page if you want two finger calibration to work
          anywhere in your application's page-->
-        <com.orbotix.calibration.api.CalibrationView
-            android:id="@+id/calibrationView"
-            android:layout_width="fill_parent"
-            android:layout_height="fill_parent"
-            app:twoFingerEnabled="true"/>
+
         <!--In this case, we want fragments to display over the calibration view-->
     </RelativeLayout>
 

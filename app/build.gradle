@@ -7,6 +7,7 @@ android {
         applicationId "com.example.ricca.bb8_mindwave"
         minSdkVersion 21
         targetSdkVersion 26
+        multiDexEnabled true
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
@@ -36,4 +37,5 @@ dependencies {
     compile 'com.google.android.gms:play-services:11.0.2'
     compile files('libs/RobotLibrary.jar')
     compile project(path: ':CalibrationLibrary')
+    compile files('src/main/jniLibs/myosdk.jar')
 }

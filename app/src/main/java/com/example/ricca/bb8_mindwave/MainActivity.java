@@ -10,7 +10,6 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.MotionEvent;
 import android.view.View;
-import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -22,31 +21,25 @@ import com.orbotix.calibration.api.CalibrationView;
 
 public class MainActivity extends AppCompatActivity {
 
-    private Button btnStartMovingRobot;
-    private Button btnEmergencyBrake;
     private MindwaveConnect mindwaveConnect;
     private BB8Connect bb8Connect;
+    private MyoConnect myoConnect;
     private CalibrationView calibrationView;
+    private CalibrationImageButtonView calibrationButtonView;
     private boolean isMindwaveConnected;
     private boolean isBB8Connected;
-    private CalibrationImageButtonView calibrationButtonView;
+    private boolean isMyoConnected;
+
     private final BroadcastReceiver mReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
             final String action = intent.getAction();
-
             if (action.equals(BluetoothAdapter.ACTION_STATE_CHANGED)) {
                 final int state = intent.getIntExtra(BluetoothAdapter.EXTRA_STATE,
                         BluetoothAdapter.ERROR);
                 switch (state) {
-                    case BluetoothAdapter.STATE_OFF:
-                        break;
                     case BluetoothAdapter.STATE_TURNING_OFF:
                         reactivateBluetoothOrLocation();
-                        break;
-                    case BluetoothAdapter.STATE_ON:
-                        break;
-                    case BluetoothAdapter.STATE_TURNING_ON:
                         break;
                 }
             }
@@ -60,12 +53,12 @@ public class MainActivity extends AppCompatActivity {
 
         this.mindwaveConnect = new MindwaveConnect(this);
         this.bb8Connect = new BB8Connect(this);
-        this.btnStartMovingRobot = (Button)findViewById(R.id.btnStartMovingRobot);
-        this.btnEmergencyBrake = (Button)findViewById(R.id.btnEmergencyBrake);
+        this.myoConnect = new MyoConnect(this);
         this.isBB8Connected = false;
         this.isMindwaveConnected = false;
-        this.btnStartMovingRobot.setEnabled(false);
-        this.btnEmergencyBrake.setEnabled(false);
+        this.isMyoConnected = false;
+        findViewById(R.id.btnEmergencyBrake).setEnabled(false);
+        findViewById(R.id.btnStartMovingRobot).setEnabled(false);
 
         // Register for broadcasts on BluetoothAdapter state change
         IntentFilter filter = new IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED);
@@ -74,9 +67,16 @@ public class MainActivity extends AppCompatActivity {
         // Check if bluetooth or location are still enabled
         this.reactivateBluetoothOrLocation();
         setupCalibration();
-        mindwaveConnect.connect();
         bb8Connect.startDiscovery();
+        myoConnect.connect();
+        mindwaveConnect.connect();
         enableCalibration();
+    }
+
+    @Override
+    protected void onDestroy(){
+        super.onDestroy();
+        this.myoConnect.disconnect();
     }
 
     //Metodi per il tasto di orientamento robot
@@ -201,6 +201,10 @@ public class MainActivity extends AppCompatActivity {
             }
         });
     }
+    public void setTxtMyoStatus(final String s){
+        ((TextView)findViewById(R.id.txtMyoStatus)).setText(s);
+    }
+
     private void setImgMindwaveConnected(){
         this.runOnUiThread(new Runnable() {
             @Override
@@ -232,8 +236,24 @@ public class MainActivity extends AppCompatActivity {
         }
     });
     }
+    private void setImgMyoConnected(){
+        this.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                ((ImageView)findViewById(R.id.imgMyo)).setImageResource(R.drawable.connected);
+            }
+        });
+    }
+    private void setImgMyoNotConnected(){
+        this.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                ((ImageView)findViewById(R.id.imgMyo)).setImageResource(R.drawable.not_connected);
+            }
+        });
+    }
     private void doIHaveToEnableButtons(){
-        if(this.isMindwaveConnected && this.isBB8Connected){
+        if(this.isMindwaveConnected && this.isBB8Connected && this.isMyoConnected){
             enableControlButtons(true);
         }
         else {
@@ -268,12 +288,22 @@ public class MainActivity extends AppCompatActivity {
             setImgBB8NotConnected();
         }
     }
+    public void myoConnected(boolean b){
+        this.isMyoConnected = b;
+        this.doIHaveToEnableButtons();
+        if(b){
+            setImgMyoConnected();
+        }
+        else {
+            setImgMyoNotConnected();
+        }
+    }
     private void enableControlButtons(final boolean enable){
         this.runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                btnStartMovingRobot.setEnabled(enable);
-                btnEmergencyBrake.setEnabled(enable);
+                findViewById(R.id.btnStartMovingRobot).setEnabled(enable);
+                findViewById(R.id.btnEmergencyBrake).setEnabled(enable);
             }
         });
     }
@@ -308,11 +338,29 @@ public class MainActivity extends AppCompatActivity {
         bb8Connect.setRobotLedBlue();
     }
     public void performMidLevelAction(){
-        bb8Connect.moveForward(0.1);
+        bb8Connect.moveForward(0.2);
         bb8Connect.setRobotLedGreen();
     }
     public void performHighLevelAction(){
-        bb8Connect.moveForward(0.2);
+        bb8Connect.moveForward(0.4);
         bb8Connect.setRobotLedRed();
+    }
+
+    //Azioni per la calibrazione del robot
+    public void startCalibratingRobot(){
+        bb8Connect.startCalibrating();
+    }
+    public void stopCalibratingRobot(){
+        bb8Connect.stopClaibrating();
+    }
+    public void rotateRobot(float angle){
+        bb8Connect.rotate(angle);
+    }
+    public float getRobotDirection(){
+        return bb8Connect.getDirection();
+    }
+
+    public boolean getIsBB8Connected(){
+        return this.isBB8Connected;
     }
 }

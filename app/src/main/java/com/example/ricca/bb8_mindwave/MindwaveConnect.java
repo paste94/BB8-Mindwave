@@ -28,119 +28,48 @@ class MindwaveConnect{
             Log.d(TAG, "connectionStates change to: " + connectionStates);
             switch (connectionStates) {
                 case ConnectionStates.STATE_CONNECTING:
-                    mainActivity.showToast("MindWave is connecting... ", Toast.LENGTH_SHORT);
-                    System.out.println("MindWave: Connecting... ");
-                    mainActivity.mindwaveConnected(false);
-                    // Do something when connecting
+                    connecting();
                     break;
                 case ConnectionStates.STATE_CONNECTED:
-                    // Do something when connected
-                    tgStreamReader.start();
-                    mainActivity.showToast("Connected", Toast.LENGTH_SHORT);
-                    System.out.println("MindWave: Connected!");
-                    mainActivity.mindwaveConnected(true);
+                    connected();
                     break;
                 case ConnectionStates.STATE_WORKING:
-                    mainActivity.showToast("WORKING", Toast.LENGTH_SHORT);
-                    // Do something when working
-
-                    //(9) demo of recording raw data , stop() will call stopRecordRawData,
-                    //or you can add a button to control it.
-                    //You can change the save path by calling setRecordStreamFilePath(String filePath) before startRecordRawData
-
-                    setAlgos();
-
+                    working();
                     break;
                 case ConnectionStates.STATE_GET_DATA_TIME_OUT:
-                    // Do something when getting data timeout
-
-                    //(9) demo of recording raw data, exception handling
-                    //tgStreamReader.stopRecordRawData();
-
-                    mainActivity.showToast("Get data time out!", Toast.LENGTH_SHORT);
-
-                    if (tgStreamReader != null && tgStreamReader.isBTConnected()) {
-                        tgStreamReader.stop();
-                        tgStreamReader.close();
-                    }
-                    //connect();
+                    getDataTimeOut();
                     break;
                 case ConnectionStates.STATE_STOPPED:
-                    mainActivity.showToast("STOPPED", Toast.LENGTH_SHORT);
+                    stopped();
                     break;
-                case ConnectionStates.STATE_DISCONNECTED: //Quando viene spento mentre è connesso
-                    // Do something when disconnected
-                    mainActivity.showToast("DISCONECTED", Toast.LENGTH_SHORT);
-
-                    mainActivity.mindwaveConnected(false);
-                    mainActivity.setTxtSignalQuality("--");
-                    mainActivity.setTxtAttention("--");
-                    mainActivity.setAttentionProgressBar(0);
-                    mainActivity.btnEmergencyBrakeListener(null);
-                    //nskAlgoSdk.NskAlgoStop();
-                    //nskAlgoSdk.NskAlgoStop();
-                    NskAlgoSdk.NskAlgoUninit();
-                    connect();
-
+                case ConnectionStates.STATE_DISCONNECTED:
+                    disconnected();
                     break;
                 case ConnectionStates.STATE_ERROR:
-
-                    mainActivity.mindwaveConnected(false);
-                    // Do something when you get error message
-                    //connect();
+                    error();
                     break;
                 case ConnectionStates.STATE_FAILED: //Quando è spento
-                    mainActivity.showToast("FAILED", Toast.LENGTH_SHORT);
-
-                    // Do something when you get failed message
-                    // It always happens when open the BluetoothSocket error or timeout
-                    // Maybe the device is not working normal.
-                    // Maybe you have to try again
-                    connect();
+                    failed();
                     break;
             }
         }
         @Override
         public void onRecordFail(int flag) {
-            // You can handle the record error message here
             Log.e(TAG,"onRecordFail: " +flag);
-
         }
-
         @Override
         public void onChecksumFail(byte[] payload, int length, int checksum) {
-            // You can handle the bad packets here.
         }
-
         @Override
         public void onDataReceived(int datatype, int data, Object obj) {
-            // You can handle the received data here
-            // You can feed the raw data to algo sdk here if necessary.
-            //Log.i(TAG,"onDataReceived");
             switch (datatype) {
                 case MindDataType.CODE_ATTENTION:
                     short attValue[] = {(short)data};
                     NskAlgoSdk.NskAlgoDataStream(NskAlgoDataType.NSK_ALGO_DATA_TYPE_ATT.value, attValue, 1);
                     break;
-                case MindDataType.CODE_MEDITATION:
-                    /*
-                    short medValue[] = {(short)data};
-                    nskAlgoSdk.NskAlgoDataStream(NskAlgoDataType.NSK_ALGO_DATA_TYPE_MED.value, medValue, 1);
-                    */
-                    break;
                 case MindDataType.CODE_POOR_SIGNAL:
                     short pqValue[] = {(short)data};
                     NskAlgoSdk.NskAlgoDataStream(NskAlgoDataType.NSK_ALGO_DATA_TYPE_PQ.value, pqValue, 1);
-                    //mainActivity.btnEmergencyBrakeListener(null);
-                    break;
-                case MindDataType.CODE_RAW:
-                    /*
-                    raw_data[raw_data_index++] = (short)data;
-                    if (raw_data_index == 512) {
-                        nskAlgoSdk.NskAlgoDataStream(NskAlgoDataType.NSK_ALGO_DATA_TYPE_EEG.value, raw_data, raw_data_index);
-                        raw_data_index = 0;
-                    }
-                    */
                     break;
                 default:
                     break;
@@ -153,7 +82,6 @@ class MindwaveConnect{
     }
 
     void connect(){
-
         BluetoothAdapter mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
 
         // Example of constructor public TgStreamReader(BluetoothAdapter ba, TgStreamHandler tgStreamHandler)
@@ -161,8 +89,6 @@ class MindwaveConnect{
 
         //Prima c'era anche il controllo: tgStreamReader != null &&
         if(tgStreamReader.isBTConnected()) {
-
-            // Prepare for connecting
             tgStreamReader.stop();
             tgStreamReader.close();
         }
@@ -183,13 +109,13 @@ class MindwaveConnect{
             public void onAttAlgoIndex(int value) {
                 Log.d(TAG, "NskAlgoAttAlgoIndexListener: Attention:" + value);
                 String attStr = "[" + value + "]";
-                if(value<50){
+                if(value<70){
                     mainActivity.performLowLevelAction();
                 }
-                else if(value>=50 && value<80){
+                else if(value>=70 && value<90){
                     mainActivity.performMidLevelAction();
                 }
-                else if(value >=80){
+                else if(value >=90){
                     mainActivity.performHighLevelAction();
                 }
                 mainActivity.setTxtAttention(attStr);
@@ -227,6 +153,51 @@ class MindwaveConnect{
     void mindwavePause(){
         NskAlgoSdk.NskAlgoPause();
     }
+
+    private void connecting(){
+        //mainActivity.showToast("MindWave is connecting... ", Toast.LENGTH_SHORT);
+        System.out.println("MindWave: Connecting... ");
+        mainActivity.mindwaveConnected(false);
+    }
+    private void connected(){
+        tgStreamReader.start();
+        //mainActivity.showToast("Connected", Toast.LENGTH_SHORT);
+        System.out.println("MindWave: Connected!");
+        mainActivity.mindwaveConnected(true);
+    }
+    private void working(){
+        //mainActivity.showToast("WORKING", Toast.LENGTH_SHORT);
+        setAlgos();
+    }
+    private void getDataTimeOut(){
+        //mainActivity.showToast("Get data time out!", Toast.LENGTH_SHORT);
+        if (tgStreamReader != null && tgStreamReader.isBTConnected()) {
+            tgStreamReader.stop();
+            tgStreamReader.close();
+        }
+    }
+    private void stopped(){
+        //mainActivity.showToast("STOPPED", Toast.LENGTH_SHORT);
+    }
+    private void disconnected(){
+        //mainActivity.showToast("DISCONECTED", Toast.LENGTH_SHORT);
+        mainActivity.mindwaveConnected(false);
+        mainActivity.setTxtSignalQuality("--");
+        mainActivity.setTxtAttention("--");
+        mainActivity.setAttentionProgressBar(0);
+        mainActivity.btnEmergencyBrakeListener(null);
+        NskAlgoSdk.NskAlgoUninit();
+        connect();
+    }
+    private void error(){
+        mainActivity.mindwaveConnected(false);
+    }
+    private void failed(){
+        mainActivity.showToast("FAILED", Toast.LENGTH_SHORT);
+        connect();
+    }
+
+
 
 
 }

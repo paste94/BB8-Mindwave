@@ -16,13 +16,12 @@ import java.util.List;
 
 class BB8Connect implements RobotChangedStateListener {
     private MainActivity mainActivity;
-    //Orbotix classes
     private DiscoveryAgentLE _discoveryAgent;
     private static ConvenienceRobot robot;
     private DiscoveryAgentEventListener _discoveryAgentEventListener = new DiscoveryAgentEventListener() {
         @Override
         public void handleRobotsAvailable(List<Robot> robots) {
-            mainActivity.setTxtRobotStatus("Robot found!");
+            mainActivity.setTxtRobotStatus("Robot found! Bring near the device to connect it");
         }
     };
     private RobotChangedStateListener robotStateListener = new RobotChangedStateListener() {
@@ -30,40 +29,22 @@ class BB8Connect implements RobotChangedStateListener {
         public void handleRobotChangedState(Robot r, RobotChangedStateNotificationType robotChangedStateNotificationType) {
             switch (robotChangedStateNotificationType) {
                 case Online:
-                    stopDiscovery();
-
-
-                    mainActivity.setTxtRobotStatus("Robot " + r.getName() + " is Online!");
-                    robot = new Sphero(r);
-
-                    // Finally for visual feedback let's turn the robot green saying that it's been connected
-                    robot.setLed(0f, 1f, 0f);
-
-                    robot.enableCollisions(true); // Enabling the collisions detector
-                    mainActivity.BB8Connected(true);
+                    online(r);
                     break;
                 case Offline:
-                    mainActivity.setTxtRobotStatus("Robot " + r.getName() + " is now Offline!");
-                    mainActivity.BB8Connected(false);
-                    startDiscovery();
+                    offline(r);
                     break;
                 case Connecting:
-                    mainActivity.setTxtRobotStatus("Connecting to " + r.getName());
-                    mainActivity.BB8Connected(false);
+                    connecting(r);
                     break;
                 case Connected:
-                    mainActivity.setTxtRobotStatus("Connected to " + r.getName());
-                    mainActivity.BB8Connected(false);
+                    connected(r);
                     break;
                 case Disconnected:
-                    mainActivity.setTxtRobotStatus("Disconnected from " + r.getName());
-                    mainActivity.BB8Connected(false);
-                    startDiscovery();
+                    disconnected(r);
                     break;
                 case FailedConnect:
-                    mainActivity.setTxtRobotStatus("Failed to connect to " + r.getName());
-                    mainActivity.BB8Connected(false);
-                    startDiscovery();
+                    failedConnect(r);
                     break;
             }
         }
@@ -74,6 +55,7 @@ class BB8Connect implements RobotChangedStateListener {
         DiscoveryAgentLE.getInstance().addRobotStateListener(this);
     }
 
+    //Ricerca bluetooth
     private void stopDiscovery() {
         // When a robot is connected, this is a good time to stop discovery. Discovery takes a lot of system
         // resources, and if left running, will cause your app to eat the user's battery up, and may cause
@@ -86,7 +68,6 @@ class BB8Connect implements RobotChangedStateListener {
         _discoveryAgent.removeRobotStateListener(robotStateListener);
         _discoveryAgent = null;
     }
-
     void startDiscovery() {
         try {
             mainActivity.showToast("Inizio ricerca robot", Toast.LENGTH_LONG);
@@ -115,32 +96,74 @@ class BB8Connect implements RobotChangedStateListener {
         }
     }
 
+    //Led del robot
     void setRobotLedRed(){
         robot.setLed(1,0,0);
     }
-
     void setRobotLedGreen(){
         robot.setLed(0,1,0);
     }
-
     void setRobotLedBlue(){
         robot.setLed(0,0,1);
     }
 
+    //Movimento
     void moveForward(double velocity ){
         robot.drive(0, (float) velocity);
     }
-
     void stopRobot(){
         robot.stop();
     }
 
+    //get-set
     static ConvenienceRobot getRobot(){
         return robot;
     }
 
+    //cambi di stato del robot
+    private void online(Robot r){
+        stopDiscovery();
+        mainActivity.setTxtRobotStatus("Robot " + r.getName() + " is Online!");
+        robot = new Sphero(r);
+        robot.setLed(0f, 1f, 0f);
+        mainActivity.BB8Connected(true);
+    }
+    private void offline(Robot r){
+        mainActivity.setTxtRobotStatus("Robot " + r.getName() + " is now Offline!");
+        mainActivity.BB8Connected(false);
+        startDiscovery();
+    }
+    private void connecting(Robot r){
+        mainActivity.setTxtRobotStatus("Connecting to " + r.getName());
+        mainActivity.BB8Connected(false);
+    }
+    private void connected(Robot r){
+        mainActivity.setTxtRobotStatus("Connected to " + r.getName());
+        mainActivity.BB8Connected(false);
+    }
+    private void disconnected(Robot r){
+        mainActivity.setTxtRobotStatus("Disconnected from " + r.getName());
+        mainActivity.BB8Connected(false);
+        startDiscovery();
+    }
+    private void failedConnect(Robot r){
+        mainActivity.setTxtRobotStatus("Failed to connect to " + r.getName());
+        mainActivity.BB8Connected(false);
+        startDiscovery();
+    }
+    void startCalibrating(){
+        robot.calibrating(true);
+    }
+    void stopClaibrating(){
+        robot.calibrating(false);
+    }
+    void rotate(float angle){
+        robot.rotate(angle);
+    }
+    float getDirection(){
+        return robot.getLastHeading();
+    }
     @Override
     public void handleRobotChangedState(Robot robot, RobotChangedStateNotificationType robotChangedStateNotificationType) {
-
     }
 }
