@@ -29,6 +29,7 @@ public class MainActivity extends AppCompatActivity {
     private boolean isMindwaveConnected;
     private boolean isBB8Connected;
     private boolean isMyoConnected;
+    private boolean driving;
 
     private final BroadcastReceiver mReceiver = new BroadcastReceiver() {
         @Override
@@ -57,6 +58,7 @@ public class MainActivity extends AppCompatActivity {
         this.isBB8Connected = false;
         this.isMindwaveConnected = false;
         this.isMyoConnected = false;
+        this.driving = false;
         findViewById(R.id.btnEmergencyBrake).setEnabled(false);
         findViewById(R.id.btnStartMovingRobot).setEnabled(false);
 
@@ -257,6 +259,9 @@ public class MainActivity extends AppCompatActivity {
             enableControlButtons(true);
         }
         else {
+            if(isBB8Connected) {
+                btnEmergencyBrakeListener(null);
+            }
             enableControlButtons(false);
         }
     }
@@ -310,40 +315,52 @@ public class MainActivity extends AppCompatActivity {
 
     //listener dei bottoni
     public void mindwaveStartListener(View v){
-        mindwaveConnect.mindwaveStart();
-        this.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                findViewById(R.id.btnStartMovingRobot).setEnabled(false);
+        if(isBB8Connected) {
+            if(isMindwaveConnected) {
+                mindwaveConnect.mindwaveStart();
+                this.driving = true;
+                this.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        findViewById(R.id.btnStartMovingRobot).setEnabled(false);
+                        ((TextView)findViewById(R.id.txtBB8State)).setText("Yes, sir");
+                    }
+                });
             }
-        });
+            else{
+                showToast("Wait until Mindwave is connected!", Toast.LENGTH_SHORT);
+            }
+        }
     }
     public void btnEmergencyBrakeListener(View v){
+        BB8Movement.getInstance().setSpeed(0);
         this.mindwaveConnect.mindwavePause();
         this.bb8Connect.stopRobot();
         this.bb8Connect.setRobotLedBlue();
         this.setTxtAttention("--");
+        this.driving = false;
         this.runOnUiThread(new Runnable() {
             @Override
             public void run() {
                 ((ProgressBar)findViewById(R.id.attentionProgressBar)).setProgress(0);
                 findViewById(R.id.btnStartMovingRobot).setEnabled(true);
+                ((TextView)findViewById(R.id.txtBB8State)).setText("Standing...");
             }
         });
     }
 
     //Azioni da eseguire quando il Mindwave registra un determinato valore
     public void performLowLevelAction(){
-        bb8Connect.stopRobot();
-        bb8Connect.setRobotLedBlue();
+        BB8Movement.getInstance().setSpeed(0);
+        moveRobot();
     }
     public void performMidLevelAction(){
-        bb8Connect.moveForward(0.2);
-        bb8Connect.setRobotLedGreen();
+        BB8Movement.getInstance().setSpeed(0.2);
+        moveRobot();
     }
     public void performHighLevelAction(){
-        bb8Connect.moveForward(0.4);
-        bb8Connect.setRobotLedRed();
+        BB8Movement.getInstance().setSpeed(0.4);
+        moveRobot();
     }
 
     //Azioni per la calibrazione del robot
@@ -354,13 +371,29 @@ public class MainActivity extends AppCompatActivity {
         bb8Connect.stopClaibrating();
     }
     public void rotateRobot(float angle){
-        bb8Connect.rotate(angle);
-    }
-    public float getRobotDirection(){
-        return bb8Connect.getDirection();
+        bb8Connect.moveForward(angle, BB8Movement.getInstance().getSpeed());
     }
 
     public boolean getIsBB8Connected(){
         return this.isBB8Connected;
+    }
+
+    public boolean isDriving(){
+        return this.driving;
+    }
+
+    private void moveRobot(){
+        double speed = BB8Movement.getInstance().getSpeed();
+        double rotation = BB8Movement.getInstance().getRotation();
+        if(speed == 0){
+            bb8Connect.setRobotLedBlue();
+        }
+        else  if(speed == 0.2){
+            bb8Connect.setRobotLedGreen();
+        }
+        else {
+            bb8Connect.setRobotLedRed();
+        }
+        bb8Connect.moveForward(0, speed);
     }
 }

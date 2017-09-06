@@ -60,11 +60,20 @@ class MyoConnect {
         public void onPose (Myo myo, long timestamp, Pose pose){
             if(pose.equals(Pose.FIST)){
                 if(mainActivity.getIsBB8Connected()) {
-                    mainActivity.startCalibratingRobot();
+                    myo.vibrate(Myo.VibrationType.SHORT);
+                    myo.unlock(Myo.UnlockType.HOLD);
+                    if(!mainActivity.isDriving()) {
+                        mainActivity.startCalibratingRobot();
+                    }
+                    else {
+                        mainActivity.stopCalibratingRobot();
+                    }
                     b = true;
                 }
             }
             else if(pose.equals(Pose.REST)){
+                myo.unlock(Myo.UnlockType.TIMED);
+                //myo.lock();
                 if(mainActivity.getIsBB8Connected()) {
                     mainActivity.stopCalibratingRobot();
                     rotate = false;
@@ -73,11 +82,13 @@ class MyoConnect {
             }
             else if(pose.equals(Pose.FINGERS_SPREAD)){
                 if(mainActivity.getIsBB8Connected()) {
+                    myo.vibrate(Myo.VibrationType.SHORT);
                     mainActivity.mindwaveStartListener(null);
                 }
             }
             else if (pose.equals(Pose.DOUBLE_TAP)){
                 if(mainActivity.getIsBB8Connected()){
+                    myo.vibrate(Myo.VibrationType.SHORT);
                     mainActivity.btnEmergencyBrakeListener(null);
                 }
             }
@@ -92,6 +103,7 @@ class MyoConnect {
             if(rotate){
                 float rot = (float)(Math.toDegrees(Quaternion.roll(rotation) - gap));
                 mainActivity.rotateRobot(calculateNewPosition((float) (rot * 1.5)));
+                mainActivity.setTxtMyoStatus((rot*1.5) + "");
             }
         }
     };
@@ -106,7 +118,7 @@ class MyoConnect {
 
     void connect(){
         Hub.getInstance().attachToAdjacentMyo();
-        Hub.getInstance().setLockingPolicy(Hub.LockingPolicy.NONE);
+        Hub.getInstance().setLockingPolicy(Hub.LockingPolicy.STANDARD);
         Hub.getInstance().addListener(lockedListener);
     }
     void disconnect(){

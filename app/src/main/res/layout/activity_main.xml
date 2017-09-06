@@ -48,7 +48,8 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="Myo" />
+                    android:text="Myo"
+                    android:textAppearance="@android:style/TextAppearance.Material.Large" />
 
                 <ImageView
                     android:id="@+id/imgMyo"
@@ -77,7 +78,8 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="No bracelets nearby" />
+                    android:text="No bracelets nearby"
+                    android:textAppearance="@android:style/TextAppearance.Material.Large" />
             </LinearLayout>
         </LinearLayout>
 
@@ -101,7 +103,8 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="Sphero BB8" />
+                    android:text="Sphero BB8"
+                    android:textAppearance="@android:style/TextAppearance.Material.Large" />
 
                 <ImageView
                     android:id="@+id/imgBB8"
@@ -132,7 +135,8 @@
                     android:layout_alignBottom="@+id/linearLayout"
                     android:layout_alignEnd="@+id/btnEmergencyBrake"
                     android:layout_weight="1"
-                    android:text="No robots nearby" />
+                    android:text="No robots nearby"
+                    android:textAppearance="@android:style/TextAppearance.Material.Large" />
 
             </LinearLayout>
 
@@ -159,7 +163,8 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="Mindwave" />
+                    android:text="Mindwave"
+                    android:textAppearance="@android:style/TextAppearance.Material.Large" />
 
                 <ImageView
                     android:id="@+id/imgMindwave"
@@ -188,6 +193,7 @@
                     android:layout_alignParentStart="true"
                     android:layout_alignParentTop="true"
                     android:text="   Signal Quality: "
+                    android:textAppearance="@android:style/TextAppearance.Material.Large"
                     tools:layout_editor_absoluteX="115dp"
                     tools:layout_editor_absoluteY="87dp" />
 
@@ -199,6 +205,7 @@
                     android:layout_toEndOf="@+id/textView"
                     android:layout_weight="1"
                     android:text="--"
+                    android:textAppearance="@android:style/TextAppearance.Material.Large"
                     tools:layout_editor_absoluteX="8dp"
                     tools:layout_editor_absoluteY="44dp" />
 
@@ -208,13 +215,13 @@
 
         <ProgressBar
             android:id="@+id/attentionProgressBar"
-            style="?android:attr/progressBarStyleHorizontal"
+            style="@android:style/Widget.DeviceDefault.Light.ProgressBar.Horizontal"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_above="@+id/calibrateButton"
+            android:layout_alignParentEnd="true"
             android:layout_alignParentStart="true"
-            android:layout_marginBottom="53dp"
-            android:layout_alignParentEnd="true" />
+            android:layout_marginBottom="53dp" />
 
         <LinearLayout
             android:layout_width="wrap_content"
@@ -237,6 +244,7 @@
                 android:layout_alignBottom="@+id/txtAttention"
                 android:layout_alignParentStart="true"
                 android:text="   Attention: "
+                android:textAppearance="@android:style/TextAppearance.Material.Large"
                 tools:layout_editor_absoluteX="8dp"
                 tools:layout_editor_absoluteY="70dp" />
 
@@ -247,6 +255,7 @@
                 android:layout_alignRight="@+id/textView5"
                 android:layout_weight="1"
                 android:text="--"
+                android:textAppearance="@android:style/TextAppearance.Material.Large"
                 tools:layout_editor_absoluteX="8dp"
                 tools:layout_editor_absoluteY="0dp" />
 
@@ -288,6 +297,15 @@
             android:layout_alignBottom="@+id/btnEmergencyBrake"
             android:layout_alignParentStart="true"
             android:layout_marginStart="11dp" />
+
+        <TextView
+            android:id="@+id/txtBB8State"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentStart="true"
+            android:layout_below="@+id/linearLayout4"
+            android:layout_marginTop="19dp"
+            android:textAppearance="@android:style/TextAppearance.Material.Large" />
 
 
         <!--This needs to be the last element in your xml page if you want two finger calibration to work

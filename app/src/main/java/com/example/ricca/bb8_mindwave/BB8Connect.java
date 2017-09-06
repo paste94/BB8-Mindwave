@@ -108,11 +108,12 @@ class BB8Connect implements RobotChangedStateListener {
     }
 
     //Movimento
-    void moveForward(double velocity ){
-        robot.drive(0, (float) velocity);
+    void moveForward(double rotation, double velocity ){
+        robot.drive((float) rotation, (float) velocity);
     }
     void stopRobot(){
-        robot.stop();
+        //robot.stop();
+        robot.drive(0, 0);
     }
 
     //get-set
@@ -158,7 +159,8 @@ class BB8Connect implements RobotChangedStateListener {
         robot.calibrating(false);
     }
     void rotate(float angle){
-        robot.rotate(angle);
+        //robot.rotate(angle);
+        robot.drive(angle, 0);
     }
     float getDirection(){
         return robot.getLastHeading();

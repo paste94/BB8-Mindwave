@@ -109,13 +109,15 @@ class MindwaveConnect{
             public void onAttAlgoIndex(int value) {
                 Log.d(TAG, "NskAlgoAttAlgoIndexListener: Attention:" + value);
                 String attStr = "[" + value + "]";
-                if(value<70){
+                final int midValue = 1;
+                final int highValue = 90;
+                if(value<midValue){
                     mainActivity.performLowLevelAction();
                 }
-                else if(value>=70 && value<90){
+                else if(value>=midValue && value<highValue){
                     mainActivity.performMidLevelAction();
                 }
-                else if(value >=90){
+                else if(value >=highValue){
                     mainActivity.performHighLevelAction();
                 }
                 mainActivity.setTxtAttention(attStr);
@@ -142,7 +144,8 @@ class MindwaveConnect{
             public void onSignalQuality(int level) {
                 //Log.d(TAG, "NskAlgoSignalQualityListener: level: " + level);
                 mainActivity.setTxtSignalQuality(NskAlgoSignalQuality.values()[level].toString());
-                if(NskAlgoSignalQuality.values()[level].toString().equals("POOR")){
+                if(NskAlgoSignalQuality.values()[level].toString().equals("POOR") ||
+                        NskAlgoSignalQuality.values()[level].toString().equals("NOT DETECTED")){
                     mainActivity.btnEmergencyBrakeListener(null);
                 }
             }
