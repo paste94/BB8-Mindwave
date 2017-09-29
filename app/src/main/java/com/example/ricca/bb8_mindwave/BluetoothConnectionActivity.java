@@ -9,6 +9,7 @@ import android.content.pm.PackageManager;
 import android.location.LocationManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.widget.Toast;
@@ -22,10 +23,6 @@ import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.location.LocationSettingsRequest;
 import com.google.android.gms.location.LocationSettingsResult;
 import com.google.android.gms.location.LocationSettingsStatusCodes;
-
-/**
- * Created by ricca on 03/08/17.
- */
 
 public class BluetoothConnectionActivity extends AppCompatActivity{
 
@@ -76,7 +73,7 @@ public class BluetoothConnectionActivity extends AppCompatActivity{
     }
 
     @Override
-    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults){
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults){
         if(requestCode == LOCATION_PERMISSIONS_RCODE){
             if(grantResults[0] == PackageManager.PERMISSION_GRANTED){
                 enableLocation();
@@ -126,23 +123,16 @@ public class BluetoothConnectionActivity extends AppCompatActivity{
     // Attiva il GPS
     private void enableLocation() {
         final LocationManager mLocationManager = (LocationManager) getSystemService( Context.LOCATION_SERVICE );
-        /* mLocationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)
-         * Restituisce true se il GPS è attivo, false altrimenti
-         */
         if (!mLocationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
-            //lcStatus.setText("Location: OFF");
             displayLocationSettingsRequest(getApplicationContext());
         }else{
-            //lcStatus.setText("Location: ON");
             lcIsOn = true;
         }
     }
 
     // Chiede all'utente di attivare il bluetooth, se acconsente lo attiva automaticamente
     private void enableBluetooth(){
-        if(bluetoothAdapter == null){
-            //btStatus.setText(R.string.bluetooth_not_found);
-        } else { //check the status and set the button text accordingly
+        if(!(bluetoothAdapter == null)){ //check the status and set the button text accordingly
             if (!bluetoothAdapter.isEnabled()) {
                 //btStatus.setText(R.string.bluetooth_is_currently_switched_off);
                 Intent bluetoothIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
@@ -163,6 +153,7 @@ public class BluetoothConnectionActivity extends AppCompatActivity{
          * Classe usata per collegarsi ai Google Play Services per attivare automaticamente
          * il GPS.
          */
+
         GoogleApiClient googleApiClient = new GoogleApiClient.Builder(context)
                 .addApi(LocationServices.API).build();
         googleApiClient.connect(); //Avvia la connessione a Play Services
@@ -178,7 +169,8 @@ public class BluetoothConnectionActivity extends AppCompatActivity{
         /* LocationSettingsRequest: Specifica il tipo di servizio di localizzazione di cui l'applicazione
          * ha bisogno
          */
-        LocationSettingsRequest.Builder builder = new LocationSettingsRequest.Builder().addLocationRequest(locationRequest);
+        LocationSettingsRequest.Builder builder = new LocationSettingsRequest
+                .Builder().addLocationRequest(locationRequest);
         builder.setAlwaysShow(true);
 
         /* LocationSettingsResult: Classe statica che rappresenta il risultato del metodo checkLocationSettings.
@@ -187,10 +179,12 @@ public class BluetoothConnectionActivity extends AppCompatActivity{
          * PendingResult: Rappresenta un set di risultati derivanti dalla chiamata di un metodo ai
          *      Google Play services.
          */
-        PendingResult<LocationSettingsResult> result = LocationServices.SettingsApi.checkLocationSettings(googleApiClient, builder.build());
+        PendingResult<LocationSettingsResult> result =
+                LocationServices.SettingsApi
+                        .checkLocationSettings(googleApiClient, builder.build());
         result.setResultCallback(new ResultCallback<LocationSettingsResult>() {
             @Override
-            public void onResult(LocationSettingsResult result) {
+            public void onResult(@NonNull LocationSettingsResult result) {
                 final Status status = result.getStatus();
                 switch (status.getStatusCode()) {
                     case LocationSettingsStatusCodes.SUCCESS:

@@ -16,9 +16,9 @@ import java.util.List;
 
 class BB8Connect implements RobotChangedStateListener {
     private MainActivity mainActivity;
-    private DiscoveryAgentLE _discoveryAgent;
+    private DiscoveryAgentLE discoveryAgent;
     private static ConvenienceRobot robot;
-    private DiscoveryAgentEventListener _discoveryAgentEventListener = new DiscoveryAgentEventListener() {
+    private DiscoveryAgentEventListener discoveryAgentEventListener = new DiscoveryAgentEventListener() {
         @Override
         public void handleRobotsAvailable(List<Robot> robots) {
             mainActivity.setTxtRobotStatus("Robot found! Bring near the device to connect it");
@@ -60,36 +60,36 @@ class BB8Connect implements RobotChangedStateListener {
         // When a robot is connected, this is a good time to stop discovery. Discovery takes a lot of system
         // resources, and if left running, will cause your app to eat the user's battery up, and may cause
         // your application to run slowly. To do this, use DiscoveryAgent#stopDiscovery().
-        _discoveryAgent.stopDiscovery();
+        discoveryAgent.stopDiscovery();
 
         // It is also proper form to not allow yourself to re-register for the discovery listeners, so let's
         // unregister for the available notifications here using DiscoveryAgent#removeDiscoveryListener().
-        _discoveryAgent.removeDiscoveryListener(_discoveryAgentEventListener);
-        _discoveryAgent.removeRobotStateListener(robotStateListener);
-        _discoveryAgent = null;
+        discoveryAgent.removeDiscoveryListener(discoveryAgentEventListener);
+        discoveryAgent.removeRobotStateListener(robotStateListener);
+        discoveryAgent = null;
     }
-    void startDiscovery() {
+    void connect() {
         try {
-            mainActivity.showToast("Inizio ricerca robot", Toast.LENGTH_LONG);
-            _discoveryAgent = DiscoveryAgentLE.getInstance();
+            mainActivity.showToast("Start Searching robot...", Toast.LENGTH_LONG);
+            discoveryAgent = DiscoveryAgentLE.getInstance();
 
             // DiscoveryAgentLE serve a mandare una notifica appena trova un robot.
             // Per fare ciò ha bisogno di un elenco di handler degli eventi, fornitigli
             // dall'implementazione del metodo handleRobotsAvailable nella classe DiscoveryAgentEventListener
-            _discoveryAgent.addDiscoveryListener(_discoveryAgentEventListener);
+            discoveryAgent.addDiscoveryListener(discoveryAgentEventListener);
 
             // Allo stesso modo settiamo l'handler per il cambiamento di stato del robot
-            _discoveryAgent.addRobotStateListener(robotStateListener);
+            discoveryAgent.addRobotStateListener(robotStateListener);
 
             // Creating a new radio descriptor to be able to connect to the BB8 robots
             RobotRadioDescriptor robotRadioDescriptor = new RobotRadioDescriptor();
             robotRadioDescriptor.setNamePrefixes(new String[]{"BB-"});
-            _discoveryAgent.setRadioDescriptor(robotRadioDescriptor);
+            discoveryAgent.setRadioDescriptor(robotRadioDescriptor);
 
-            // Then to start looking for a BB8, you use DiscoveryAgent#startDiscovery()
+            // Then to start looking for a BB8, you use DiscoveryAgent#connect()
             // You do need to handle the discovery exception. This can occur in cases where the user has
             // Bluetooth off, or when the discovery cannot be started for some other reason.
-            _discoveryAgent.startDiscovery(mainActivity.getApplicationContext());
+            discoveryAgent.startDiscovery(mainActivity.getApplicationContext());
         } catch (DiscoveryException e) {
             Log.e("Sphero", "Discovery Error: " + e);
             e.printStackTrace();
@@ -105,6 +105,9 @@ class BB8Connect implements RobotChangedStateListener {
     }
     void setRobotLedBlue(){
         robot.setLed(0,0,1);
+    }
+    void setRobotLedYellow() {
+        robot.setLed(1,1,0);
     }
 
     //Movimento
@@ -132,7 +135,7 @@ class BB8Connect implements RobotChangedStateListener {
     private void offline(Robot r){
         mainActivity.setTxtRobotStatus("Robot " + r.getName() + " is now Offline!");
         mainActivity.BB8Connected(false);
-        startDiscovery();
+        connect();
     }
     private void connecting(Robot r){
         mainActivity.setTxtRobotStatus("Connecting to " + r.getName());
@@ -145,25 +148,19 @@ class BB8Connect implements RobotChangedStateListener {
     private void disconnected(Robot r){
         mainActivity.setTxtRobotStatus("Disconnected from " + r.getName());
         mainActivity.BB8Connected(false);
-        startDiscovery();
+        connect();
     }
     private void failedConnect(Robot r){
         mainActivity.setTxtRobotStatus("Failed to connect to " + r.getName());
         mainActivity.BB8Connected(false);
-        startDiscovery();
+        connect();
     }
+
     void startCalibrating(){
         robot.calibrating(true);
     }
     void stopClaibrating(){
         robot.calibrating(false);
-    }
-    void rotate(float angle){
-        //robot.rotate(angle);
-        robot.drive(angle, 0);
-    }
-    float getDirection(){
-        return robot.getLastHeading();
     }
     @Override
     public void handleRobotChangedState(Robot robot, RobotChangedStateNotificationType robotChangedStateNotificationType) {

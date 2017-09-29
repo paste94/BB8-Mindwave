@@ -88,7 +88,7 @@ class MindwaveConnect{
         tgStreamReader = new TgStreamReader(mBluetoothAdapter,callback);
 
         //Prima c'era anche il controllo: tgStreamReader != null &&
-        if(tgStreamReader.isBTConnected()) {
+        if(tgStreamReader != null && tgStreamReader.isBTConnected()) {
             tgStreamReader.stop();
             tgStreamReader.close();
         }
@@ -107,9 +107,9 @@ class MindwaveConnect{
         nskAlgoSdk.setOnAttAlgoIndexListener(new NskAlgoSdk.OnAttAlgoIndexListener() {
             @Override
             public void onAttAlgoIndex(int value) {
-                Log.d(TAG, "NskAlgoAttAlgoIndexListener: Attention:" + value);
                 String attStr = "[" + value + "]";
-                final int midValue = 1;
+                mainActivity.write(value+"");
+                final int midValue = 65;
                 final int highValue = 90;
                 if(value<midValue){
                     mainActivity.performLowLevelAction();
@@ -142,10 +142,10 @@ class MindwaveConnect{
         nskAlgoSdk.setOnSignalQualityListener(new NskAlgoSdk.OnSignalQualityListener() {
             @Override
             public void onSignalQuality(int level) {
-                //Log.d(TAG, "NskAlgoSignalQualityListener: level: " + level);
                 mainActivity.setTxtSignalQuality(NskAlgoSignalQuality.values()[level].toString());
                 if(NskAlgoSignalQuality.values()[level].toString().equals("POOR") ||
                         NskAlgoSignalQuality.values()[level].toString().equals("NOT DETECTED")){
+                    mainActivity.write("Segnale perso");
                     mainActivity.btnEmergencyBrakeListener(null);
                 }
             }
@@ -158,32 +158,26 @@ class MindwaveConnect{
     }
 
     private void connecting(){
-        //mainActivity.showToast("MindWave is connecting... ", Toast.LENGTH_SHORT);
         System.out.println("MindWave: Connecting... ");
         mainActivity.mindwaveConnected(false);
     }
     private void connected(){
         tgStreamReader.start();
-        //mainActivity.showToast("Connected", Toast.LENGTH_SHORT);
         System.out.println("MindWave: Connected!");
         mainActivity.mindwaveConnected(true);
     }
     private void working(){
-        //mainActivity.showToast("WORKING", Toast.LENGTH_SHORT);
         setAlgos();
     }
     private void getDataTimeOut(){
-        //mainActivity.showToast("Get data time out!", Toast.LENGTH_SHORT);
         if (tgStreamReader != null && tgStreamReader.isBTConnected()) {
             tgStreamReader.stop();
             tgStreamReader.close();
         }
     }
     private void stopped(){
-        //mainActivity.showToast("STOPPED", Toast.LENGTH_SHORT);
     }
     private void disconnected(){
-        //mainActivity.showToast("DISCONECTED", Toast.LENGTH_SHORT);
         mainActivity.mindwaveConnected(false);
         mainActivity.setTxtSignalQuality("--");
         mainActivity.setTxtAttention("--");
@@ -199,8 +193,4 @@ class MindwaveConnect{
         mainActivity.showToast("FAILED", Toast.LENGTH_SHORT);
         connect();
     }
-
-
-
-
 }

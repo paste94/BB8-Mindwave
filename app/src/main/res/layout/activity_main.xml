@@ -307,6 +307,45 @@
             android:layout_marginTop="19dp"
             android:textAppearance="@android:style/TextAppearance.Material.Large" />
 
+        <LinearLayout
+            android:id="@+id/MyoIcons"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_above="@+id/btnStartMovingRobot"
+            android:layout_alignParentBottom="false"
+            android:layout_alignStart="@+id/calibrateButton"
+            android:clickable="false"
+            android:orientation="horizontal"
+            android:paddingBottom="5dp">
+
+            <ImageView
+                android:id="@+id/imgDoubleTap"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:paddingLeft="5dp"
+                android:paddingRight="5dp"
+                app:srcCompat="@drawable/grey_double_tap" />
+
+            <ImageView
+                android:id="@+id/imgFist"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:paddingLeft="5dp"
+                android:paddingRight="5dp"
+                app:srcCompat="@drawable/grey_fist" />
+
+            <ImageView
+                android:id="@+id/imgSpreadFingers"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:paddingLeft="5dp"
+                android:paddingRight="5dp"
+                app:srcCompat="@drawable/grey_spread_fingers" />
+        </LinearLayout>
+
 
         <!--This needs to be the last element in your xml page if you want two finger calibration to work
          anywhere in your application's page-->

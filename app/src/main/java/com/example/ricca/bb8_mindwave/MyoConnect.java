@@ -19,11 +19,6 @@ class MyoConnect {
     private double gap = 0;
     private DeviceListener lockedListener = new AbstractDeviceListener() {
         @Override
-        public void onAttach(Myo myo, long timestamp) {
-            mainActivity.setTxtMyoStatus("Myo band found! Bring near the device to connect it");
-            mainActivity.myoConnected(false);
-        }
-        @Override
         public void onDetach(Myo myo, long timestamp){
             mainActivity.setTxtMyoStatus("No bracelets nearby");
             mainActivity.myoConnected(false);
@@ -51,23 +46,34 @@ class MyoConnect {
         @Override
         public void onUnlock (Myo myo, long timestamp){
             super.onUnlock(myo, timestamp);
+            //Prima c'era mainActivity.myoUnlocked();
             if(!mainActivity.getIsBB8Connected()){
                 myo.lock();
                 mainActivity.showToast("Wait until robot is connected!", Toast.LENGTH_SHORT);
+            } //TODO: Testare questa cosa!
+            else{
+                mainActivity.myoUnlocked();
             }
         }
+
+        @Override
+        public void onLock (Myo myo, long timestamp){
+            super.onLock(myo, timestamp);
+            mainActivity.myoLocked();
+        }
+
         @Override
         public void onPose (Myo myo, long timestamp, Pose pose){
             if(pose.equals(Pose.FIST)){
                 if(mainActivity.getIsBB8Connected()) {
                     myo.vibrate(Myo.VibrationType.SHORT);
                     myo.unlock(Myo.UnlockType.HOLD);
-                    if(!mainActivity.isDriving()) {
-                        mainActivity.startCalibratingRobot();
-                    }
-                    else {
-                        mainActivity.stopCalibratingRobot();
-                    }
+                        /*if(!mainActivity.isDriving()) {
+                            mainActivity.startCalibratingRobot();
+                        }
+                        else {
+                            mainActivity.stopCalibratingRobot();
+                        }*/
                     b = true;
                 }
             }
@@ -87,10 +93,10 @@ class MyoConnect {
                 }
             }
             else if (pose.equals(Pose.DOUBLE_TAP)){
-                if(mainActivity.getIsBB8Connected()){
+                /*if(mainActivity.getIsBB8Connected()){
                     myo.vibrate(Myo.VibrationType.SHORT);
                     mainActivity.btnEmergencyBrakeListener(null);
-                }
+                }*/
             }
         }
         @Override
@@ -102,8 +108,8 @@ class MyoConnect {
             }
             if(rotate){
                 float rot = (float)(Math.toDegrees(Quaternion.roll(rotation) - gap));
-                mainActivity.rotateRobot(calculateNewPosition((float) (rot * 1.5)));
-                mainActivity.setTxtMyoStatus((rot*1.5) + "");
+                mainActivity.setTxtMyoStatus(rot + "");
+                mainActivity.rotateRobot(360 - calculateNewPosition((float) (rot * 1.5)));
             }
         }
     };

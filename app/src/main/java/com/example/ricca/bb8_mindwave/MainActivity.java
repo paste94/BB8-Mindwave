@@ -7,17 +7,28 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.location.LocationManager;
 import android.os.Bundle;
+import android.os.Environment;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
+import android.widget.RadioButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.orbotix.calibration.api.CalibrationEventListener;
 import com.orbotix.calibration.api.CalibrationImageButtonView;
 import com.orbotix.calibration.api.CalibrationView;
+
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -30,6 +41,9 @@ public class MainActivity extends AppCompatActivity {
     private boolean isBB8Connected;
     private boolean isMyoConnected;
     private boolean driving;
+
+    File file;
+    FileWriter writer;
 
     private final BroadcastReceiver mReceiver = new BroadcastReceiver() {
         @Override
@@ -52,6 +66,9 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        String s = new SimpleDateFormat("HH.mm.ss").format(new Date());
+        file = new File(Environment.getExternalStorageDirectory(), "/datiNotteRicercatori/prova" + s + ".txt");
+
         this.mindwaveConnect = new MindwaveConnect(this);
         this.bb8Connect = new BB8Connect(this);
         this.myoConnect = new MyoConnect(this);
@@ -62,6 +79,9 @@ public class MainActivity extends AppCompatActivity {
         findViewById(R.id.btnEmergencyBrake).setEnabled(false);
         findViewById(R.id.btnStartMovingRobot).setEnabled(false);
 
+
+        showPopup();
+
         // Register for broadcasts on BluetoothAdapter state change
         IntentFilter filter = new IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED);
         this.registerReceiver(mReceiver, filter);
@@ -69,7 +89,7 @@ public class MainActivity extends AppCompatActivity {
         // Check if bluetooth or location are still enabled
         this.reactivateBluetoothOrLocation();
         setupCalibration();
-        bb8Connect.startDiscovery();
+        bb8Connect.connect();
         myoConnect.connect();
         mindwaveConnect.connect();
         enableCalibration();
@@ -156,9 +176,11 @@ public class MainActivity extends AppCompatActivity {
     }
 
     //Attivazione automatica di bluetooth e GPS
+
     public void reactivateBluetoothOrLocation(){
         // Check if location is still enabled
-        final LocationManager mLocationManager = (LocationManager) getSystemService( Context.LOCATION_SERVICE );
+        final LocationManager mLocationManager = (LocationManager) getSystemService(
+                Context.LOCATION_SERVICE );
         if (!mLocationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
             startActivity(new Intent(MainActivity.this, BluetoothConnectionActivity.class));
         }
@@ -243,6 +265,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void run() {
                 ((ImageView)findViewById(R.id.imgMyo)).setImageResource(R.drawable.connected);
+                ((ImageView)findViewById(R.id.imgDoubleTap)).setImageResource(R.drawable.blue_double_tap);
             }
         });
     }
@@ -251,6 +274,27 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void run() {
                 ((ImageView)findViewById(R.id.imgMyo)).setImageResource(R.drawable.not_connected);
+                ((ImageView)findViewById(R.id.imgDoubleTap)).setImageResource(R.drawable.grey_double_tap);
+                ((ImageView)findViewById(R.id.imgFist)).setImageResource(R.drawable.grey_fist);
+                ((ImageView)findViewById(R.id.imgSpreadFingers)).setImageResource(R.drawable.grey_spread_fingers);
+            }
+        });
+    }
+    public void myoUnlocked(){
+        this.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                ((ImageView)findViewById(R.id.imgFist)).setImageResource(R.drawable.blue_fist);
+                ((ImageView)findViewById(R.id.imgSpreadFingers)).setImageResource(R.drawable.blue_spread_fingers);
+            }
+        });
+    }
+    public void myoLocked(){
+        this.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                ((ImageView)findViewById(R.id.imgFist)).setImageResource(R.drawable.grey_fist);
+                ((ImageView)findViewById(R.id.imgSpreadFingers)).setImageResource(R.drawable.grey_spread_fingers);
             }
         });
     }
@@ -318,6 +362,7 @@ public class MainActivity extends AppCompatActivity {
         if(isBB8Connected) {
             if(isMindwaveConnected) {
                 mindwaveConnect.mindwaveStart();
+                this.write("Start");
                 this.driving = true;
                 this.runOnUiThread(new Runnable() {
                     @Override
@@ -336,9 +381,10 @@ public class MainActivity extends AppCompatActivity {
         BB8Movement.getInstance().setSpeed(0);
         this.mindwaveConnect.mindwavePause();
         this.bb8Connect.stopRobot();
-        this.bb8Connect.setRobotLedBlue();
+        //this.bb8Connect.setRobotLedBlue();
         this.setTxtAttention("--");
         this.driving = false;
+        this.bb8Connect.setRobotLedYellow();
         this.runOnUiThread(new Runnable() {
             @Override
             public void run() {
@@ -384,7 +430,6 @@ public class MainActivity extends AppCompatActivity {
 
     private void moveRobot(){
         double speed = BB8Movement.getInstance().getSpeed();
-        double rotation = BB8Movement.getInstance().getRotation();
         if(speed == 0){
             bb8Connect.setRobotLedBlue();
         }
@@ -395,5 +440,54 @@ public class MainActivity extends AppCompatActivity {
             bb8Connect.setRobotLedRed();
         }
         bb8Connect.moveForward(0, speed);
+    }
+
+    void write(String s){
+        try{
+            writer = new FileWriter(file, true);
+            writer.append(s + "\n");
+            writer.flush();
+            writer.close();
+            final String path = file.getAbsolutePath();
+            Toast toast = Toast.makeText(getApplicationContext(), path, Toast.LENGTH_LONG);
+            toast.show();
+        }
+        catch (IOException e){
+            this.showToast("Cannot write on file! " + e.getMessage(), Toast.LENGTH_LONG);
+        }
+    }
+
+    void showPopup(){
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        LayoutInflater layoutInflater = getLayoutInflater();
+
+        View v = layoutInflater.inflate(R.layout.statistics, null);
+
+        builder.setView(v);
+        builder.create();
+        builder.show();
+    }
+
+    public void saveStatistics(View v){
+        try{
+            String gender = "Not specified";
+            if(((RadioButton)v.findViewById(R.id.radioFemale)).isChecked()){
+                gender = "F";
+            }
+            else if (((RadioButton)v.findViewById(R.id.radioMale)).isChecked()){
+                gender = "M";
+            }
+            String age = ((EditText)v.findViewById(R.id.editText)).getText().toString();
+            writer = new FileWriter(file, true);
+            writer.append(gender + ", " + age + "\n");
+            writer.flush();
+            writer.close();
+            final String path = file.getAbsolutePath();
+            Toast toast = Toast.makeText(getApplicationContext(), path, Toast.LENGTH_LONG);
+            toast.show();
+        }
+        catch (IOException e){
+            this.showToast("Cannot write on file! " + e.getMessage(), Toast.LENGTH_LONG);
+        }
     }
 }
