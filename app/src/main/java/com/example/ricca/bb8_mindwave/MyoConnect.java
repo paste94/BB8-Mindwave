@@ -46,11 +46,10 @@ class MyoConnect {
         @Override
         public void onUnlock (Myo myo, long timestamp){
             super.onUnlock(myo, timestamp);
-            //Prima c'era mainActivity.myoUnlocked();
             if(!mainActivity.getIsBB8Connected()){
                 myo.lock();
                 mainActivity.showToast("Wait until robot is connected!", Toast.LENGTH_SHORT);
-            } //TODO: Testare questa cosa!
+            }
             else{
                 mainActivity.myoUnlocked();
             }
@@ -68,18 +67,11 @@ class MyoConnect {
                 if(mainActivity.getIsBB8Connected()) {
                     myo.vibrate(Myo.VibrationType.SHORT);
                     myo.unlock(Myo.UnlockType.HOLD);
-                        /*if(!mainActivity.isDriving()) {
-                            mainActivity.startCalibratingRobot();
-                        }
-                        else {
-                            mainActivity.stopCalibratingRobot();
-                        }*/
                     b = true;
                 }
             }
             else if(pose.equals(Pose.REST)){
                 myo.unlock(Myo.UnlockType.TIMED);
-                //myo.lock();
                 if(mainActivity.getIsBB8Connected()) {
                     mainActivity.stopCalibratingRobot();
                     rotate = false;
@@ -92,12 +84,6 @@ class MyoConnect {
                     mainActivity.mindwaveStartListener(null);
                 }
             }
-            else if (pose.equals(Pose.DOUBLE_TAP)){
-                /*if(mainActivity.getIsBB8Connected()){
-                    myo.vibrate(Myo.VibrationType.SHORT);
-                    mainActivity.btnEmergencyBrakeListener(null);
-                }*/
-            }
         }
         @Override
         public void onOrientationData(Myo myo, long timestamp, Quaternion rotation) {
@@ -108,8 +94,7 @@ class MyoConnect {
             }
             if(rotate){
                 float rot = (float)(Math.toDegrees(Quaternion.roll(rotation) - gap));
-                mainActivity.setTxtMyoStatus(rot + "");
-                mainActivity.rotateRobot(360 - calculateNewPosition((float) (rot * 1.5)));
+                mainActivity.rotateRobot(calculateNewPosition((float) (rot * 1.5)));
             }
         }
     };

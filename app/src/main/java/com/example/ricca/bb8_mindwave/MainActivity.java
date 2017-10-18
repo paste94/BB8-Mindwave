@@ -3,6 +3,7 @@ package com.example.ricca.bb8_mindwave;
 import android.bluetooth.BluetoothAdapter;
 import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.location.LocationManager;
@@ -39,8 +40,9 @@ public class MainActivity extends AppCompatActivity {
     private CalibrationImageButtonView calibrationButtonView;
     private boolean isMindwaveConnected;
     private boolean isBB8Connected;
-    private boolean isMyoConnected;
-    private boolean driving;
+
+
+    AlertDialog.Builder builder;
 
     File file;
     FileWriter writer;
@@ -74,18 +76,16 @@ public class MainActivity extends AppCompatActivity {
         this.myoConnect = new MyoConnect(this);
         this.isBB8Connected = false;
         this.isMindwaveConnected = false;
-        this.isMyoConnected = false;
-        this.driving = false;
         findViewById(R.id.btnEmergencyBrake).setEnabled(false);
         findViewById(R.id.btnStartMovingRobot).setEnabled(false);
 
 
-        showPopup();
 
         // Register for broadcasts on BluetoothAdapter state change
         IntentFilter filter = new IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED);
         this.registerReceiver(mReceiver, filter);
 
+        showPopup();
         // Check if bluetooth or location are still enabled
         this.reactivateBluetoothOrLocation();
         setupCalibration();
@@ -93,6 +93,7 @@ public class MainActivity extends AppCompatActivity {
         myoConnect.connect();
         mindwaveConnect.connect();
         enableCalibration();
+        this.unregisterReceiver(mReceiver);
     }
 
     @Override
@@ -299,7 +300,7 @@ public class MainActivity extends AppCompatActivity {
         });
     }
     private void doIHaveToEnableButtons(){
-        if(this.isMindwaveConnected && this.isBB8Connected && this.isMyoConnected){
+        if(this.isMindwaveConnected & this.isBB8Connected){
             enableControlButtons(true);
         }
         else {
@@ -338,7 +339,6 @@ public class MainActivity extends AppCompatActivity {
         }
     }
     public void myoConnected(boolean b){
-        this.isMyoConnected = b;
         this.doIHaveToEnableButtons();
         if(b){
             setImgMyoConnected();
@@ -363,12 +363,11 @@ public class MainActivity extends AppCompatActivity {
             if(isMindwaveConnected) {
                 mindwaveConnect.mindwaveStart();
                 this.write("Start");
-                this.driving = true;
                 this.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
                         findViewById(R.id.btnStartMovingRobot).setEnabled(false);
-                        ((TextView)findViewById(R.id.txtBB8State)).setText("Yes, sir");
+                        ((TextView)findViewById(R.id.txtBB8State)).setText(R.string.moving);
                     }
                 });
             }
@@ -381,16 +380,14 @@ public class MainActivity extends AppCompatActivity {
         BB8Movement.getInstance().setSpeed(0);
         this.mindwaveConnect.mindwavePause();
         this.bb8Connect.stopRobot();
-        //this.bb8Connect.setRobotLedBlue();
         this.setTxtAttention("--");
-        this.driving = false;
         this.bb8Connect.setRobotLedYellow();
         this.runOnUiThread(new Runnable() {
             @Override
             public void run() {
                 ((ProgressBar)findViewById(R.id.attentionProgressBar)).setProgress(0);
                 findViewById(R.id.btnStartMovingRobot).setEnabled(true);
-                ((TextView)findViewById(R.id.txtBB8State)).setText("Standing...");
+                ((TextView)findViewById(R.id.txtBB8State)).setText(R.string.standing);
             }
         });
     }
@@ -401,18 +398,14 @@ public class MainActivity extends AppCompatActivity {
         moveRobot();
     }
     public void performMidLevelAction(){
-        BB8Movement.getInstance().setSpeed(0.2);
+        BB8Movement.getInstance().setSpeed(0.3);
         moveRobot();
     }
     public void performHighLevelAction(){
-        BB8Movement.getInstance().setSpeed(0.4);
+        BB8Movement.getInstance().setSpeed(0.5);
         moveRobot();
     }
 
-    //Azioni per la calibrazione del robot
-    public void startCalibratingRobot(){
-        bb8Connect.startCalibrating();
-    }
     public void stopCalibratingRobot(){
         bb8Connect.stopClaibrating();
     }
@@ -424,16 +417,12 @@ public class MainActivity extends AppCompatActivity {
         return this.isBB8Connected;
     }
 
-    public boolean isDriving(){
-        return this.driving;
-    }
-
     private void moveRobot(){
         double speed = BB8Movement.getInstance().getSpeed();
         if(speed == 0){
             bb8Connect.setRobotLedBlue();
         }
-        else  if(speed == 0.2){
+        else  if(speed == 0.3){
             bb8Connect.setRobotLedGreen();
         }
         else {
@@ -445,12 +434,9 @@ public class MainActivity extends AppCompatActivity {
     void write(String s){
         try{
             writer = new FileWriter(file, true);
-            writer.append(s + "\n");
+            writer.append(s).append("\n");
             writer.flush();
             writer.close();
-            final String path = file.getAbsolutePath();
-            Toast toast = Toast.makeText(getApplicationContext(), path, Toast.LENGTH_LONG);
-            toast.show();
         }
         catch (IOException e){
             this.showToast("Cannot write on file! " + e.getMessage(), Toast.LENGTH_LONG);
@@ -458,36 +444,35 @@ public class MainActivity extends AppCompatActivity {
     }
 
     void showPopup(){
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder = new AlertDialog.Builder(this);
         LayoutInflater layoutInflater = getLayoutInflater();
 
-        View v = layoutInflater.inflate(R.layout.statistics, null);
+        final View v = layoutInflater.inflate(R.layout.statistics, null);
+        ((RadioButton)v.findViewById(R.id.radioFemale)).setChecked(true);
 
-        builder.setView(v);
+        builder.setView(v).setPositiveButton("OK", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int id) {
+                String gender;
+                String age;
+                if(((RadioButton)v.findViewById(R.id.radioFemale)).isChecked()){
+                    gender = "F";
+                }
+                else{
+                    gender = "M";
+                }
+                age = ((EditText)v.findViewById(R.id.editAge)).getText().toString();
+                try {
+                    writer = new FileWriter(file, true);
+                    writer.append(gender).append(", ").append(age).append("\n");
+                    writer.flush();
+                    writer.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
         builder.create();
         builder.show();
-    }
-
-    public void saveStatistics(View v){
-        try{
-            String gender = "Not specified";
-            if(((RadioButton)v.findViewById(R.id.radioFemale)).isChecked()){
-                gender = "F";
-            }
-            else if (((RadioButton)v.findViewById(R.id.radioMale)).isChecked()){
-                gender = "M";
-            }
-            String age = ((EditText)v.findViewById(R.id.editText)).getText().toString();
-            writer = new FileWriter(file, true);
-            writer.append(gender + ", " + age + "\n");
-            writer.flush();
-            writer.close();
-            final String path = file.getAbsolutePath();
-            Toast toast = Toast.makeText(getApplicationContext(), path, Toast.LENGTH_LONG);
-            toast.show();
-        }
-        catch (IOException e){
-            this.showToast("Cannot write on file! " + e.getMessage(), Toast.LENGTH_LONG);
-        }
     }
 }

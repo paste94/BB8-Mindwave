@@ -48,7 +48,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="Myo"
+                    android:text="@string/myo"
                     android:textAppearance="@android:style/TextAppearance.Material.Large" />
 
                 <ImageView
@@ -71,14 +71,14 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="   " />
+                    android:text="@string/space" />
 
                 <TextView
                     android:id="@+id/txtMyoStatus"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="No bracelets nearby"
+                    android:text="@string/no_bracelets_nearby"
                     android:textAppearance="@android:style/TextAppearance.Material.Large" />
             </LinearLayout>
         </LinearLayout>
@@ -103,7 +103,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="Sphero BB8"
+                    android:text="@string/sphero_bb8"
                     android:textAppearance="@android:style/TextAppearance.Material.Large" />
 
                 <ImageView
@@ -126,7 +126,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="   " />
+                    android:text="@string/space" />
 
                 <TextView
                     android:id="@+id/robotStatus"
@@ -135,7 +135,7 @@
                     android:layout_alignBottom="@+id/linearLayout"
                     android:layout_alignEnd="@+id/btnEmergencyBrake"
                     android:layout_weight="1"
-                    android:text="No robots nearby"
+                    android:text="@string/no_robots_nearby"
                     android:textAppearance="@android:style/TextAppearance.Material.Large" />
 
             </LinearLayout>

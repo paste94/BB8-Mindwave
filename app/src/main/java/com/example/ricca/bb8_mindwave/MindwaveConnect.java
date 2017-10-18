@@ -88,7 +88,7 @@ class MindwaveConnect{
         tgStreamReader = new TgStreamReader(mBluetoothAdapter,callback);
 
         //Prima c'era anche il controllo: tgStreamReader != null &&
-        if(tgStreamReader != null && tgStreamReader.isBTConnected()) {
+        if(tgStreamReader.isBTConnected()) {
             tgStreamReader.stop();
             tgStreamReader.close();
         }

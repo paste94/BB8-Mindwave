@@ -1,3 +1,13 @@
 <resources>
     <string name="app_name">BB8-Mindwave</string>
+    <string name="moving">Yes, sir!</string>
+    <string name="standing">Standing…</string>
+    <string name="age">Age</string>
+    <string name="female">Female</string>
+    <string name="male">Male</string>
+    <string name="myo">Myo</string>
+    <string name="space" />
+    <string name="no_bracelets_nearby">No bracelets nearby</string>
+    <string name="sphero_bb8">Sphero BB8</string>
+    <string name="no_robots_nearby">No robots nearby</string>
 </resources>
