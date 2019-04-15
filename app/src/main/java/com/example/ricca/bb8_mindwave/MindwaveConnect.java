@@ -108,7 +108,7 @@ class MindwaveConnect{
             @Override
             public void onAttAlgoIndex(int value) {
                 String attStr = "[" + value + "]";
-                mainActivity.write(value+"");
+                //mainActivity.write(value+"");
                 final int midValue = 65;
                 final int highValue = 90;
                 if(value<midValue){
@@ -145,7 +145,7 @@ class MindwaveConnect{
                 mainActivity.setTxtSignalQuality(NskAlgoSignalQuality.values()[level].toString());
                 if(NskAlgoSignalQuality.values()[level].toString().equals("POOR") ||
                         NskAlgoSignalQuality.values()[level].toString().equals("NOT DETECTED")){
-                    mainActivity.write("Segnale perso");
+                    //mainActivity.write("Segnale perso");
                     mainActivity.btnEmergencyBrakeListener(null);
                 }
             }

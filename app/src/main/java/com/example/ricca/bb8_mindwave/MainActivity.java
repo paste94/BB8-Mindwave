@@ -85,7 +85,7 @@ public class MainActivity extends AppCompatActivity {
         IntentFilter filter = new IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED);
         this.registerReceiver(mReceiver, filter);
 
-        showPopup();
+        //showPopup();
         // Check if bluetooth or location are still enabled
         this.reactivateBluetoothOrLocation();
         setupCalibration();
@@ -362,7 +362,7 @@ public class MainActivity extends AppCompatActivity {
         if(isBB8Connected) {
             if(isMindwaveConnected) {
                 mindwaveConnect.mindwaveStart();
-                this.write("Start");
+                //this.write("Start");
                 this.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
